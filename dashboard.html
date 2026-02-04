@@ -479,7 +479,7 @@
         }
 
         @media (max-width: 768px) {
-            body { zoom: 80%; }
+            body { zoom: 100%; }
             .main-container {
                 flex-direction: column;
             }
@@ -505,6 +505,12 @@
             }
             .mobile-menu-btn { display: block; }
             .user-info { display: none; }
+            .content-area { padding: 1rem; }
+
+            /* Ajustes Mobile para Dashboard */
+            .quick-actions { grid-template-columns: 1fr; }
+            .chart-container { padding: 1rem; min-height: 250px; }
+            .stats-cards { gap: 1rem; }
         }
         
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
@@ -704,16 +710,36 @@
             </div>
             <form id="formPaciente">
                 <div class="form-group">
-                    <label>Nome Completo</label>
+                    <label>Nome Completo *</label>
                     <input type="text" id="pacienteNome" class="form-control" required>
                 </div>
-                <div class="form-group">
-                    <label>Celular</label>
-                    <input type="tel" id="pacienteCelular" class="form-control" placeholder="(00) 00000-0000">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>CPF</label>
+                        <input type="text" id="pacienteCpf" class="form-control" placeholder="000.000.000-00" maxlength="14">
+                    </div>
+                    <div class="form-group">
+                        <label>Data de Nascimento</label>
+                        <input type="date" id="pacienteNascimento" class="form-control">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Celular</label>
+                        <input type="tel" id="pacienteCelular" class="form-control" placeholder="(00) 00000-0000">
+                    </div>
+                    <div class="form-group">
+                        <label>E-mail</label>
+                        <input type="email" id="pacienteEmail" class="form-control">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>E-mail</label>
-                    <input type="email" id="pacienteEmail" class="form-control">
+                    <label>Convênio</label>
+                    <input type="text" id="pacienteConvenio" class="form-control" placeholder="Ex: Particular, Unimed...">
+                </div>
+                <div class="form-group">
+                    <label>Observações</label>
+                    <textarea id="pacienteObservacoes" class="form-control" rows="2"></textarea>
                 </div>
                 <button type="submit" class="btn-primary">Salvar Cadastro</button>
             </form>
@@ -745,21 +771,52 @@
             if (e.target === this) fecharModalPaciente();
         });
 
+        // Máscara de CPF e Celular no Modal
+        document.getElementById('pacienteCpf').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            e.target.value = value;
+        });
+
+        document.getElementById('pacienteCelular').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+            value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+            e.target.value = value;
+        });
+
         document.getElementById('formPaciente').addEventListener('submit', function(e) {
             e.preventDefault();
             const user = firebase.auth().currentUser;
             if (!user) return;
 
             const nome = document.getElementById('pacienteNome').value;
+            const cpf = document.getElementById('pacienteCpf').value;
+            const nascimento = document.getElementById('pacienteNascimento').value;
             const celular = document.getElementById('pacienteCelular').value;
             const email = document.getElementById('pacienteEmail').value;
+            const convenio = document.getElementById('pacienteConvenio').value;
+            const observacoes = document.getElementById('pacienteObservacoes').value;
+
+            if (!nome) {
+                alert("O nome do paciente é obrigatório.");
+                return;
+            }
 
             const novoPaciente = {
                 id: Date.now(),
                 ownerId: user.uid,
                 nome: nome,
+                cpf: cpf,
+                nascimento: nascimento,
                 celular: celular,
                 email: email,
+                convenio: convenio,
+                observacoes: observacoes,
                 dataCadastro: new Date().toISOString()
             };
 

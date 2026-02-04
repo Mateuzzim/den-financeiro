@@ -44,12 +44,27 @@
         .section-title { font-size: 1.3rem; color: #1a237e; margin-bottom: 1.5rem; font-weight: 600; }
         .footer { text-align: center; padding: 1.5rem; color: #5f6368; font-size: 0.9rem; border-top: 1px solid #eee; margin-top: 2rem; }
         @media (max-width: 768px) { 
-            body { zoom: 80%; }
+            body { zoom: 100%; }
             .main-container { flex-direction: column; } 
             .sidebar { width: 100%; padding: 1rem; display: none; } 
             .sidebar.active { display: block; animation: slideDown 0.3s ease-out; }
+            .content-area { padding: 1rem; }
             .page-header { flex-direction: column; align-items: flex-start; } 
+            .page-header > div:last-child { width: 100%; margin-top: 1rem; justify-content: space-between; }
             .mobile-menu-btn { display: block; }
+            .user-info { display: none; }
+
+            /* Ajustes de Formulário Mobile */
+            .form-grid { grid-template-columns: 1fr; }
+            
+            /* Ajustes da Barra de Busca */
+            .search-toolbar { flex-direction: column; align-items: stretch; }
+            .search-toolbar input { width: 100% !important; }
+            .search-toolbar button { width: 100%; justify-content: center; }
+
+            /* Modal */
+            .modal-content { width: 95%; padding: 1.5rem; max-height: 90vh; }
+            .modal-body { grid-template-columns: 1fr; }
         }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -233,7 +248,7 @@
             
             <div class="recent-activity table-container">
                 <h3 class="section-title">Pacientes Cadastrados</h3>
-                <div style="margin-bottom: 1rem; display: flex; gap: 10px;">
+                <div class="search-toolbar" style="margin-bottom: 1rem; display: flex; gap: 10px;">
                     <input type="text" id="busca-paciente" class="form-control" placeholder="🔍 Pesquisar por nome ou CPF..." style="flex: 1;">
                     <button id="btn-filtros" class="btn-outline" style="white-space: nowrap; padding: 0.7rem 1.5rem;">
                         <i class="fas fa-filter"></i> Filtros
