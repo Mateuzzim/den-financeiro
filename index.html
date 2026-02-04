@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Den | Sistema Financeiro Odontológico</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦷</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -85,10 +86,15 @@
         .footer p { opacity: 0.7; margin-top: 1rem; }
 
         @media (max-width: 768px) {
-            .hero { flex-direction: column; text-align: center; padding-top: 2rem; }
+            body { zoom: 80%; }
+            .navbar { padding: 1.5rem 5%; }
+            .hero { flex-direction: column; text-align: center; padding: 3rem 5%; justify-content: center; }
             .hero-content { max-width: 100%; margin-bottom: 3rem; }
-            .hero-image { width: 80%; }
+            .hero h1 { font-size: 3rem; }
+            .hero-image { width: 100%; margin-top: 2rem; }
+            .hero-image i { font-size: 18rem; }
             .nav-links { display: none; }
+            .features { padding: 3rem 5%; }
         }
     </style>
 </head>

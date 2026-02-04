@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Den | Sistema de Gestão Odontológica</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦷</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Firebase SDKs -->
@@ -1092,95 +1093,6 @@
                 console.log('Filtro alterado para:', this.value);
                 // Aqui você pode adicionar lógica para filtrar os dados antes de chamar updateDashboard()
             });
-        });
-    </script>
-</body>
-</html>
-                        },
-                        x: {
-                            grid: { display: false }
-                        }
-                    }
-                }
-            });
-
-            // Gráfico de Pizza - Procedimentos
-            const ctxPie = document.getElementById('proceduresChart').getContext('2d');
-            proceduresChartInstance = new Chart(ctxPie, {
-                type: 'pie',
-                data: {
-                    labels: procLabels,
-                    datasets: [{
-                        data: procData,
-                        backgroundColor: [
-                            '#1a73e8', // Azul
-                            '#43a047', // Verde
-                            '#fb8c00', // Laranja
-                            '#e53935', // Vermelho
-                            '#8e24aa', // Roxo
-                            '#00acc1'  // Ciano
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right' }
-                    }
-                }
-            });
-
-            // Lógica do Filtro de Período
-            document.getElementById('periodFilter').addEventListener('change', function() {
-                // Implementação futura: Recalcular dados com base no período selecionado
-                // Por enquanto, mantém a visualização padrão
-                console.log('Filtro alterado para:', this.value);
-            });
-
-            // 3. Preencher Próximas Consultas (Reais)
-            const appointmentsList = document.getElementById('appointments-list');
-            appointmentsList.innerHTML = '';
-
-            // Filtrar consultas futuras (ou de hoje que ainda não passaram, simplificado para >= hoje)
-            const upcomingApps = filteredAppointments.filter(app => {
-                const appDate = new Date(app.year, app.month, app.day);
-                // Zera horas para comparar apenas datas ou usa lógica completa
-                const nowZero = new Date();
-                nowZero.setHours(0,0,0,0);
-                return appDate >= nowZero;
-            }).sort((a, b) => {
-                // Ordenar por data e hora
-                const dateA = new Date(a.year, a.month, a.day, ...a.time.split(':'));
-                const dateB = new Date(b.year, b.month, b.day, ...b.time.split(':'));
-                return dateA - dateB;
-            }).slice(0, 5); // Pegar apenas as 5 próximas
-
-            upcomingApps.forEach(app => {
-                // Formatar data para exibição amigável
-                const appDate = new Date(app.year, app.month, app.day);
-                const isToday = appDate.toDateString() === new Date().toDateString();
-                const dateDisplay = isToday ? 'Hoje' : `${app.day}/${app.month + 1}`;
-
-                appointmentsList.innerHTML += `
-                    <div class="appointment-item">
-                        <div class="appointment-time" style="min-width: 80px; text-align: center;">
-                            <div style="font-size: 0.8rem; opacity: 0.8;">${dateDisplay}</div>
-                            ${app.time}
-                        </div>
-                        <div class="appointment-info">
-                            <h4>${app.patient}</h4>
-                            <p>${app.procedure || 'Consulta'} - ${app.type === 'confirmed' ? 'Confirmado' : app.type === 'pending' ? 'Pendente' : 'Agendado'}</p>
-                        </div>
-                        <button class="btn-access" onclick="window.location.href='agendamento.html'" title="Acessar Agendamento"><i class="fas fa-chevron-right"></i></button>
-                    </div>
-                `;
-            });
-
-            if (upcomingApps.length === 0) {
-                appointmentsList.innerHTML = '<p style="color: #999; font-style: italic; padding: 1rem 0;">Nenhuma consulta futura agendada.</p>';
-            }
         });
     </script>
 </body>
