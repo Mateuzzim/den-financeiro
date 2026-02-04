@@ -16,6 +16,7 @@
         .logo-symbol { font-size: 2rem; background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.5)); }
         .logo-text { font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; color: #1a237e; }
         
+        .mobile-menu-toggle { display: none; font-size: 1.5rem; background: none; border: none; cursor: pointer; color: #1a237e; }
         .nav-links { display: flex; gap: 2rem; list-style: none; }
         .nav-links a { text-decoration: none; color: #5f6368; font-weight: 500; transition: color 0.2s; }
         .nav-links a:hover { color: #1a73e8; }
@@ -55,9 +56,24 @@
         .footer p { opacity: 0.7; margin-top: 1rem; }
 
         @media (max-width: 768px) {
+            body { zoom: 80%; }
             .nav-links { display: none; }
+            .nav-links.active { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; background: white; width: 100%; padding: 1rem 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); animation: slideDown 0.3s ease-out; }
+            .nav-links.active li { text-align: center; padding: 0.5rem 0; }
+            .mobile-menu-toggle { display: block; }
             .pricing-card.featured { transform: scale(1); }
             .pricing-card.featured:hover { transform: translateY(-10px); }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Modal Styles */
@@ -71,6 +87,30 @@
         .payment-btn span { font-weight: 600; color: #333; }
         .pix-code { background: #f5f5f5; padding: 1rem; border-radius: 6px; margin-top: 1rem; font-family: monospace; word-break: break-all; font-size: 0.85rem; color: #555; }
         .qr-placeholder { background: #eee; width: 150px; height: 150px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 8px; }
+
+        /* Botão WhatsApp Flutuante */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #25d366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 2000;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+            background-color: #128c7e;
+        }
     </style>
 </head>
 <body>
@@ -80,6 +120,7 @@
             <div class="logo-symbol"><i class="fas fa-tooth"></i></div>
             <div class="logo-text">DEN</div>
         </a>
+        <button class="mobile-menu-toggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
         <ul class="nav-links">
             <li><a href="index.html#funcionalidades">Funcionalidades</a></li>
             <li><a href="planos.html" style="color: #1a73e8; font-weight: 700;">Planos</a></li>
@@ -137,7 +178,7 @@
                 <div class="qr-placeholder">
                     <i class="fas fa-qrcode" style="font-size: 4rem;"></i>
                 </div>
-                <div class="pix-code">00020126360014BR.GOV.BCB.PIX0114+55119999988885204000053039865802BR5913DEN FINANCEIRO6009SAO PAULO62070503***63041234</div>
+                <div class="pix-code">00020126360014BR.GOV.BCB.PIX0114+55719963812275204000053039865802BR5913DEN FINANCEIRO6009SAO PAULO62070503***63041234</div>
                 <button class="btn btn-primary" style="margin-top: 1rem; width: 100%;" onclick="confirmarPagamento()">Já fiz o pagamento</button>
             </div>
         </div>
@@ -150,6 +191,11 @@
     </footer>
 
     <script>
+        function toggleMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('active');
+        }
+
         function abrirModalPagamento() {
             document.getElementById('modalPagamento').style.display = 'flex';
         }
@@ -185,5 +231,9 @@
             if (e.target === this) fecharModalPagamento();
         });
     </script>
+
+    <a href="https://wa.me/5571996381227" class="whatsapp-float" target="_blank" title="Fale conosco no WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
 </body>
 </html>

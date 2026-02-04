@@ -44,6 +44,7 @@
         .section-title { font-size: 1.3rem; color: #1a237e; margin-bottom: 1.5rem; font-weight: 600; }
         .footer { text-align: center; padding: 1.5rem; color: #5f6368; font-size: 0.9rem; border-top: 1px solid #eee; margin-top: 2rem; }
         @media (max-width: 768px) { 
+            body { zoom: 80%; }
             .main-container { flex-direction: column; } 
             .sidebar { width: 100%; padding: 1rem; display: none; } 
             .sidebar.active { display: block; animation: slideDown 0.3s ease-out; }
@@ -148,7 +149,7 @@
                 <div class="user-name">Mateus</div>
                 <div class="user-role">Administrador</div>
             </div>
-            <div class="user-avatar">M</div>
+            <a href="perfil.html" class="user-avatar" style="text-decoration: none;" title="Ir para Meu Perfil">M</a>
             <a href="index.html" style="color: white; opacity: 0.8; font-size: 1.2rem; margin-left: 10px;" title="Sair"><i class="fas fa-sign-out-alt"></i></a>
         </div>
     </header>
@@ -1271,7 +1272,17 @@
 
             document.querySelector('.user-name').textContent = userName;
             document.querySelector('.user-role').textContent = userTitle;
-            document.querySelector('.user-avatar').textContent = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            
+            const userAvatar = localStorage.getItem('userAvatar');
+            const avatarEl = document.querySelector('.user-avatar');
+            if (userAvatar) {
+                avatarEl.style.backgroundImage = `url('${userAvatar}')`;
+                avatarEl.style.backgroundSize = 'cover';
+                avatarEl.style.backgroundPosition = 'center';
+                avatarEl.textContent = '';
+            } else {
+                avatarEl.textContent = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            }
 
             // Lógica de Filtro por Profissional (Usuário vs Admin)
             const profSelect = document.getElementById('profissional-select');

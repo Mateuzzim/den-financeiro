@@ -100,7 +100,7 @@
                 <div class="user-name">Mateus</div>
                 <div class="user-role">Administrador</div>
             </div>
-            <div class="user-avatar">M</div>
+            <a href="perfil.html" class="user-avatar" style="text-decoration: none;" title="Ir para Meu Perfil">M</a>
             <a href="index.html" style="color: white; opacity: 0.8; font-size: 1.2rem; margin-left: 10px;" title="Sair"><i class="fas fa-sign-out-alt"></i></a>
         </div>
     </header>
@@ -682,7 +682,17 @@
 
             document.querySelector('.user-name').textContent = userName;
             document.querySelector('.user-role').textContent = userTitle;
-            document.querySelector('.user-avatar').textContent = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            
+            const userAvatar = localStorage.getItem('userAvatar');
+            const avatarEl = document.querySelector('.user-avatar');
+            if (userAvatar) {
+                avatarEl.style.backgroundImage = `url('${userAvatar}')`;
+                avatarEl.style.backgroundSize = 'cover';
+                avatarEl.style.backgroundPosition = 'center';
+                avatarEl.textContent = '';
+            } else {
+                avatarEl.textContent = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            }
 
             // Carregar Usuários do Firestore em Tempo Real
             db.collection('users').onSnapshot((snapshot) => {

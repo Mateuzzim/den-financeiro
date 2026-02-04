@@ -82,6 +82,27 @@
         .feature-card h3 { font-size: 1.5rem; color: #333; margin-bottom: 1rem; }
         .feature-card p { color: #666; line-height: 1.6; }
 
+        /* Why Den Section */
+        .why-den { padding: 5rem 5%; background-color: #f8f9fa; }
+        .why-container { display: flex; align-items: center; gap: 4rem; max-width: 1200px; margin: 0 auto; }
+        .why-content { flex: 1; }
+        .why-content h2 { font-size: 2.5rem; color: #1a237e; margin-bottom: 1.5rem; font-weight: 700; }
+        .why-content p { font-size: 1.1rem; color: #5f6368; line-height: 1.8; margin-bottom: 2rem; }
+        .why-list { list-style: none; }
+        .why-list li { margin-bottom: 1rem; font-size: 1.1rem; color: #333; display: flex; align-items: center; gap: 10px; }
+        .why-list li i { color: #00c853; font-size: 1.2rem; }
+        .why-image { flex: 1; }
+        .why-image img { width: 100%; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .why-image img:hover { transform: scale(1.02); }
+
+        /* Screenshots Section */
+        .screenshots { padding: 5rem 5%; background-color: #fff; text-align: center; }
+        .screenshots-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; }
+        .screenshot-card { background: white; padding: 1rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.3s; border: 1px solid #f0f0f0; }
+        .screenshot-card:hover { transform: translateY(-10px); }
+        .screenshot-card img { width: 100%; border-radius: 8px; margin-bottom: 1rem; height: 200px; object-fit: cover; }
+        .screenshot-card p { font-weight: 600; color: #1a237e; }
+
         /* Footer */
         .footer { background: #1a237e; color: white; padding: 3rem 5%; text-align: center; }
         .footer p { opacity: 0.7; margin-top: 1rem; }
@@ -99,6 +120,7 @@
             .nav-links.active li { text-align: center; padding: 0.5rem 0; }
             .features { padding: 3rem 5%; }
             .mobile-menu-toggle { display: block; }
+            .why-container { flex-direction: column; }
         }
 
         @keyframes slideDown {
@@ -110,6 +132,30 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+
+        /* Botão WhatsApp Flutuante */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #25d366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 2000;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+            background-color: #128c7e;
         }
     </style>
 </head>
@@ -138,10 +184,6 @@
         <div class="hero-content">
             <h1>O Futuro da Gestão Odontológica</h1>
             <p>Simplifique a administração da sua clínica com o sistema Den. Controle financeiro, agendamento inteligente e gestão de pacientes em uma única plataforma intuitiva e moderna.</p>
-            <div class="nav-buttons">
-                <a href="cadastro_usuario.html" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Começar Agora</a>
-                <a href="login.html" class="btn btn-outline" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Acessar Sistema</a>
-            </div>
         </div>
         <div class="hero-image">
             <div style="text-align: center;">
@@ -172,6 +214,44 @@
         </div>
     </section>
 
+    <!-- Why Den Section -->
+    <section class="why-den">
+        <div class="why-container">
+            <div class="why-image">
+                <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Clínica Odontológica Moderna">
+            </div>
+            <div class="why-content">
+                <h2>Por que escolher o Den?</h2>
+                <p>Desenvolvido por especialistas em gestão e tecnologia, o Den oferece uma experiência única para dentistas que buscam eficiência e modernidade.</p>
+                <ul class="why-list">
+                    <li><i class="fas fa-check-circle"></i> Interface intuitiva e fácil de usar</li>
+                    <li><i class="fas fa-check-circle"></i> Acesso seguro de qualquer lugar (Nuvem)</li>
+                    <li><i class="fas fa-check-circle"></i> Segurança de dados avançada (LGPD)</li>
+                    <li><i class="fas fa-check-circle"></i> Suporte técnico especializado</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section class="screenshots">
+        <h2 class="section-title">Interface Moderna e Intuitiva</h2>
+        <div class="screenshots-grid">
+            <div class="screenshot-card">
+                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Dashboard">
+                <p>Dashboard Completo</p>
+            </div>
+            <div class="screenshot-card">
+                <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Agenda">
+                <p>Agenda Inteligente</p>
+            </div>
+            <div class="screenshot-card">
+                <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Financeiro">
+                <p>Controle Financeiro</p>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="logo-symbol" style="font-size: 2rem; margin-bottom: 1rem;"><i class="fas fa-tooth"></i></div>
@@ -185,5 +265,9 @@
             navLinks.classList.toggle('active');
         }
     </script>
+
+    <a href="https://wa.me/5571996381227" class="whatsapp-float" target="_blank" title="Fale conosco no WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
 </body>
 </html>

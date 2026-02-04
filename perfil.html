@@ -85,6 +85,7 @@
         .form-control.with-toggle { padding-right: 40px; }
 
         @media (max-width: 768px) { 
+            body { zoom: 80%; }
             .main-container { flex-direction: column; } 
             .sidebar { width: 100%; padding: 1rem; display: none; } 
             .sidebar.active { display: block; animation: slideDown 0.3s ease-out; }
@@ -111,7 +112,7 @@
                 <div class="user-name">Mateus</div>
                 <div class="user-role">Administrador</div>
             </div>
-            <div class="user-avatar">M</div>
+            <a href="perfil.html" class="user-avatar" style="text-decoration: none;" title="Ir para Meu Perfil">M</a>
             <a href="index.html" style="color: white; opacity: 0.8; font-size: 1.2rem; margin-left: 10px;" title="Sair"><i class="fas fa-sign-out-alt"></i></a>
         </div>
     </header>
@@ -240,6 +241,29 @@
             auth.onAuthStateChanged((user) => {
                 if (!user) {
                     window.location.href = 'login.html';
+                } else {
+                    // Carregar dados do Firestore
+                    db.collection('users').doc(user.uid).get().then((doc) => {
+                        if (doc.exists) {
+                            const data = doc.data();
+                            document.getElementById('profileName').value = data.name || '';
+                            document.getElementById('profileEmail').value = data.email || '';
+                            document.getElementById('profilePhone').value = data.celular || '';
+                            document.getElementById('profileSpecialty').value = data.specialty || '';
+                            
+                            // Atualizar interface e LocalStorage
+                            const userName = data.name || 'Usuário';
+                            document.querySelector('.user-name').textContent = userName;
+                            document.querySelector('.profile-header-card h3').textContent = userName;
+                            document.querySelector('.user-role').textContent = data.role || '';
+                            
+                            localStorage.setItem('userName', userName);
+                            localStorage.setItem('userRole', data.role === 'Administrador' ? 'admin' : 'user');
+                            localStorage.setItem('userTitle', data.role || '');
+                            
+                            updateAvatars(userName, localStorage.getItem('userAvatar'));
+                        }
+                    });
                 }
             });
 
@@ -251,17 +275,18 @@
             const userSpecialty = localStorage.getItem('userSpecialty') || 'Gestão';
             const userAvatar = localStorage.getItem('userAvatar');
 
-            document.querySelector('.user-name').textContent = userName;
-            document.querySelector('.user-role').textContent = userTitle;
+            // Inicialização visual com dados do LocalStorage (enquanto Firestore carrega)
+            if (userName) {
+                document.querySelector('.user-name').textContent = userName;
+                document.querySelector('.profile-header-card h3').textContent = userName;
+                document.getElementById('profileName').value = userName;
+            }
+            if (userTitle) document.querySelector('.user-role').textContent = userTitle;
+            if (userEmail) document.getElementById('profileEmail').value = userEmail;
+            if (userPhone) document.getElementById('profilePhone').value = userPhone;
+            if (userSpecialty) document.getElementById('profileSpecialty').value = userSpecialty;
             
-            // Preencher campos do formulário com dados salvos
-            document.getElementById('profileName').value = userName;
-            document.getElementById('profileEmail').value = userEmail;
-            document.getElementById('profilePhone').value = userPhone;
-            document.getElementById('profileSpecialty').value = userSpecialty;
-
-            // Atualizar Avatares (Header e Perfil)
-            updateAvatars(userName, userAvatar);
+            updateAvatars(userName || 'U', userAvatar);
 
             if (userRole === 'user') {
                 const savedRestricted = localStorage.getItem('restrictedMenus');
@@ -319,6 +344,9 @@
         document.getElementById('profileForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+            
             // Validação de Senha
             const newPass = document.getElementById('newPassword').value;
             const confirmPass = document.getElementById('confirmNewPassword').value;
@@ -341,36 +369,44 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
             btn.disabled = true;
 
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                
-                // Salvar dados no LocalStorage
-                const newName = document.getElementById('profileName').value;
-                const newEmail = document.getElementById('profileEmail').value;
-                const newPhone = document.getElementById('profilePhone').value;
-                const newSpecialty = document.getElementById('profileSpecialty').value;
+            const newName = document.getElementById('profileName').value;
+            const newEmail = document.getElementById('profileEmail').value;
+            const newPhone = document.getElementById('profilePhone').value;
+            const newSpecialty = document.getElementById('profileSpecialty').value;
 
+            const updates = {
+                name: newName,
+                email: newEmail,
+                celular: newPhone,
+                specialty: newSpecialty
+            };
+
+            const promises = [db.collection('users').doc(user.uid).update(updates)];
+
+            if (newPass) {
+                promises.push(user.updatePassword(newPass));
+            }
+
+            Promise.all(promises).then(() => {
                 localStorage.setItem('userName', newName);
                 localStorage.setItem('userEmail', newEmail);
                 localStorage.setItem('userPhone', newPhone);
                 localStorage.setItem('userSpecialty', newSpecialty);
 
-                // Atualizar UI imediatamente
                 document.querySelector('.user-name').textContent = newName;
                 document.querySelector('.profile-header-card h3').textContent = newName;
-                
-                // Atualizar iniciais caso não tenha foto
-                const currentAvatar = localStorage.getItem('userAvatar');
-                updateAvatars(newName, currentAvatar);
+                updateAvatars(newName, localStorage.getItem('userAvatar'));
 
-                alert('Dados do perfil atualizados com sucesso!');
-                
-                // Limpar campos de senha
+                alert('Dados atualizados com sucesso!');
                 document.getElementById('currentPassword').value = '';
                 document.getElementById('newPassword').value = '';
                 document.getElementById('confirmNewPassword').value = '';
-            }, 1000);
+            }).catch(error => {
+                alert('Erro ao atualizar: ' + error.message);
+            }).finally(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
         });
     </script>
 </body>

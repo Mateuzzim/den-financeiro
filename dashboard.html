@@ -270,8 +270,8 @@
         .quick-actions {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .action-btn {
@@ -474,11 +474,12 @@
             }
             
             .quick-actions {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: repeat(3, 1fr);
             }
         }
 
         @media (max-width: 768px) {
+            body { zoom: 80%; }
             .main-container {
                 flex-direction: column;
             }
@@ -503,6 +504,7 @@
                 align-items: flex-start;
             }
             .mobile-menu-btn { display: block; }
+            .user-info { display: none; }
         }
         
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
@@ -586,6 +588,13 @@
                 </div>
             </div>
 
+            <!-- Ações Rápidas -->
+            <div class="quick-actions">
+                <button class="action-btn" onclick="window.location.href='agendamento.html'"><i class="fas fa-calendar-plus" style="color: #1a73e8;"></i> Agendamento</button>
+                <button class="action-btn" onclick="abrirModalPaciente()"><i class="fas fa-user-plus" style="color: #43a047;"></i> Novo Paciente</button>
+                <button class="action-btn" onclick="window.location.href='relatorios.html'"><i class="fas fa-print" style="color: #8e24aa;"></i> Relatório</button>
+            </div>
+
             <!-- Cartões de Estatísticas -->
             <div class="stats-cards">
                 <div class="stat-card">
@@ -663,13 +672,6 @@
                         <canvas id="proceduresChart"></canvas>
                     </div>
                 </div>
-            </div>
-
-            <!-- Ações Rápidas -->
-            <div class="quick-actions">
-                <button class="action-btn" onclick="window.location.href='agendamento.html'"><i class="fas fa-calendar-plus" style="color: #1a73e8;"></i> Agendamento</button>
-                <button class="action-btn" onclick="abrirModalPaciente()"><i class="fas fa-user-plus" style="color: #43a047;"></i> Novo Paciente</button>
-                <button class="action-btn" onclick="window.location.href='relatorios.html'"><i class="fas fa-print" style="color: #8e24aa;"></i> Relatório</button>
             </div>
 
             <!-- Grid Inferior: Ações, Consultas, Atividades -->
@@ -808,9 +810,17 @@
             document.querySelector('.user-name').textContent = userName;
             document.querySelector('.user-role').textContent = userTitle;
             
-            // 2. Atualizar Iniciais do Avatar
-            const initials = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            document.querySelector('.user-avatar').textContent = initials;
+            // 2. Atualizar Avatar
+            const userAvatar = localStorage.getItem('userAvatar');
+            const avatarEl = document.querySelector('.user-avatar');
+            if (userAvatar) {
+                avatarEl.style.backgroundImage = `url('${userAvatar}')`;
+                avatarEl.style.backgroundSize = 'cover';
+                avatarEl.style.backgroundPosition = 'center';
+                avatarEl.textContent = '';
+            } else {
+                avatarEl.textContent = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            }
 
             // 3. Verificar Mensagens de Contato
             const messages = JSON.parse(localStorage.getItem('contactMessages')) || [];
