@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações | Den</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f4f8; color: #333; line-height: 1.6; zoom: 90%; }
+        .header { background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); color: white; padding: 1.2rem 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; }
+        .logo-container { display: flex; align-items: center; gap: 15px; }
+        .logo-symbol { font-size: 2.4rem; background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.5)); animation: pulse-glow 3s infinite alternate; }
+        .logo-text h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: 2px; background: linear-gradient(90deg, #ffffff 0%, #e3f2fd 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 0; line-height: 1; font-family: 'Segoe UI', sans-serif; }
+        .logo-text p { font-size: 0.7rem; color: #81d4fa; letter-spacing: 4px; text-transform: uppercase; margin-top: 4px; font-weight: 600; }
+        @keyframes pulse-glow { from { filter: drop-shadow(0 0 2px rgba(0, 229, 255, 0.3)); } to { filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.7)); } }
+        .user-menu { display: flex; align-items: center; gap: 20px; }
+        .user-info { text-align: right; }
+        .user-name { font-weight: 600; font-size: 1.1rem; }
+        .user-role { font-size: 0.85rem; opacity: 0.9; }
+        .user-avatar { width: 50px; height: 50px; border-radius: 50%; background-color: #bbdefb; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #0d47a1; font-size: 1.2rem; border: 3px solid rgba(255, 255, 255, 0.3); }
+        .main-container { display: flex; min-height: calc(100vh - 80px); }
+        .sidebar { width: 260px; background-color: white; padding: 2rem 0; box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
+        .nav-section { margin-bottom: 2rem; }
+        .nav-title { font-size: 0.85rem; text-transform: uppercase; color: #5f6368; font-weight: 600; padding: 0 1.5rem; margin-bottom: 0.8rem; letter-spacing: 0.5px; }
+        .nav-links { list-style: none; }
+        .nav-links li { margin-bottom: 2px; }
+        .nav-links a { display: flex; align-items: center; gap: 15px; padding: 1rem 1.5rem; color: #3c4043; text-decoration: none; font-weight: 500; transition: all 0.2s ease; border-left: 4px solid transparent; }
+        .nav-links a:hover { background-color: #f1f8ff; color: #1a73e8; border-left-color: #1a73e8; }
+        .nav-links a.active { background-color: #e8f0fe; color: #1a73e8; border-left-color: #1a73e8; font-weight: 600; }
+        .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
+        .content-area { flex: 1; padding: 2.5rem; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
+        .page-title h2 { font-size: 1.8rem; color: #1a237e; font-weight: 700; margin-bottom: 0.5rem; }
+        .page-title p { color: #5f6368; font-size: 1rem; }
+        .recent-activity { background: white; border-radius: 12px; padding: 1.8rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+        .section-title { font-size: 1.3rem; color: #1a237e; margin-bottom: 1.5rem; font-weight: 600; }
+        .footer { text-align: center; padding: 1.5rem; color: #5f6368; font-size: 0.9rem; border-top: 1px solid #eee; margin-top: 2rem; }
+        @media (max-width: 768px) { .main-container { flex-direction: column; } .sidebar { width: 100%; padding: 1.5rem; } .page-header { flex-direction: column; align-items: flex-start; } }
+        .btn-primary { background-color: #1a73e8; color: white; border: none; padding: 0.8rem 2rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { background-color: #1557b0; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <div class="logo-symbol"><i class="fas fa-tooth"></i></div>
+            <div class="logo-text">
+                <h1>DEN</h1>
+                <p>FINANCEIRO</p>
+            </div>
+        </div>
+        <div class="user-menu">
+            <div class="user-info">
+                <div class="user-name">Mateus</div>
+                <div class="user-role">Administrador</div>
+            </div>
+            <div class="user-avatar">M</div>
+            <a href="index.html" style="color: white; opacity: 0.8; font-size: 1.2rem; margin-left: 10px;" title="Sair"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </header>
+    <div class="main-container">
+        <nav class="sidebar">
+            <div class="nav-section">
+                <h3 class="nav-title">Menu Principal</h3>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
+                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Agendamento</a></li>
+                    <li><a href="paciente.html"><i class="fas fa-user-injured nav-icon"></i> Pacientes</a></li>
+                    <li><a href="financeiro.html"><i class="fas fa-chart-line nav-icon"></i> Financeiro</a></li>
+                    <li><a href="profissonal.html"><i class="fas fa-user-md nav-icon"></i> Profissional</a></li>
+                    <li><a href="relatorios.html"><i class="fas fa-chart-pie nav-icon"></i> Relatórios</a></li>
+                </ul>
+            </div>
+            <div class="nav-section">
+                <h3 class="nav-title">Ferramentas</h3>
+                <ul class="nav-links">
+                    <li><a href="faturas.html"><i class="fas fa-file-invoice-dollar nav-icon"></i> Faturas</a></li>
+                    <li><a href="configurações.html" class="active"><i class="fas fa-cogs nav-icon"></i> Configurações</a></li>
+                    <li><a href="usuarios.html"><i class="fas fa-users-cog nav-icon"></i> Usuários</a></li>
+                    <li><a href="ajuda.html"><i class="fas fa-question-circle nav-icon"></i> Ajuda</a></li>
+                </ul>
+            </div>
+        </nav>
+        <main class="content-area">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Configurações</h2>
+                </div>
+                <div class="current-date"><strong>Data atual:</strong> 04 de Fevereiro de 2026</div>
+            </div>
+            <div class="recent-activity">
+                <h3 class="section-title">Opções do Sistema</h3>
+                <p>Ajuste as configurações da sua clínica aqui.</p>
+                
+                <div style="margin-top: 2rem; border-top: 1px solid #eee; padding-top: 2rem;">
+                    <h4 style="margin-bottom: 1rem; color: #1a237e;">Backup de Dados</h4>
+                    <p style="margin-bottom: 1rem; color: #5f6368;">Exporte todos os dados cadastrados no sistema (Pacientes, Agendamentos, etc.) para um arquivo JSON de segurança.</p>
+                    <button id="btnBackup" class="btn-primary" style="background-color: #28a745;">
+                        <i class="fas fa-download"></i> Fazer Backup dos Dados
+                    </button>
+                </div>
+
+                <div style="margin-top: 2rem; border-top: 1px solid #eee; padding-top: 2rem;">
+                    <h4 style="margin-bottom: 1rem; color: #1a237e;">Migração para Nuvem (Firebase)</h4>
+                    <p style="margin-bottom: 1rem; color: #5f6368;">Transfira seus dados locais de pacientes para o banco de dados seguro na nuvem.</p>
+                    <button id="btnMigrar" class="btn-primary" style="background-color: #fb8c00;" onclick="migrarPacientes()">
+                        <i class="fas fa-cloud-upload-alt"></i> Migrar Pacientes para Nuvem
+                    </button>
+                    <button id="btnMigrarAgenda" class="btn-primary" style="background-color: #1a73e8; margin-left: 10px;" onclick="migrarAgendamentos()">
+                        <i class="fas fa-calendar-alt"></i> Migrar Agendamentos
+                    </button>
+                </div>
+
+                <div style="margin-top: 2rem; border-top: 1px solid #eee; padding-top: 2rem;">
+                    <h4 style="margin-bottom: 1rem; color: #1a237e;">Controle de Permissões (Usuários)</h4>
+                    <p style="margin-bottom: 1rem; color: #5f6368;">Defina quais módulos estarão visíveis para usuários com perfil de acesso restrito (ex: Recepcionista).</p>
+                    
+                    <form id="permissionsForm">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="perm_dashboard" value="Dashboard" checked disabled>
+                                <label for="perm_dashboard" style="cursor: not-allowed; color: #999;">Dashboard (Fixo)</label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="perm_agendamento" value="Agendamento">
+                                <label for="perm_agendamento" style="cursor: pointer;">Agendamento</label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="perm_pacientes" value="Pacientes">
+                                <label for="perm_pacientes" style="cursor: pointer;">Pacientes</label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="perm_financeiro" value="Financeiro">
+                                <label for="perm_financeiro" style="cursor: pointer;">Financeiro</label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="perm_profissional" value="Profissional">
+                                <label for="perm_profissional" style="cursor: pointer;">Profissional</label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="perm_relatorios" value="Relatórios">
+                                <label for="perm_relatorios" style="cursor: pointer;">Relatórios</label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="perm_faturas" value="Faturas">
+                                <label for="perm_faturas" style="cursor: pointer;">Faturas</label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="perm_configuracoes" value="Configurações">
+                                <label for="perm_configuracoes" style="cursor: pointer;">Configurações</label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="perm_usuarios" value="Usuários">
+                                <label for="perm_usuarios" style="cursor: pointer;">Usuários</label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="perm_ajuda" value="Ajuda">
+                                <label for="perm_ajuda" style="cursor: pointer;">Ajuda</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Salvar Permissões
+                        </button>
+                    </form>
+                </div>
+
+                <div style="margin-top: 2rem; border-top: 1px solid #eee; padding-top: 2rem;">
+                    <h4 style="margin-bottom: 1rem; color: #1a237e;">Informações de Contato (Site)</h4>
+                    <p style="margin-bottom: 1rem; color: #5f6368;">Edite as informações exibidas na página de contato pública.</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; align-items: start;">
+                        <form id="contactInfoForm">
+                            <div class="form-group">
+                                <label>Endereço</label>
+                                <textarea id="contactAddress" class="form-control" rows="2" placeholder="Ex: Av. Paulista, 1000 - SP"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>E-mail de Contato</label>
+                                <textarea id="contactEmail" class="form-control" rows="2" placeholder="Ex: contato@den.com"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Telefone / Horário</label>
+                                <textarea id="contactPhone" class="form-control" rows="2" placeholder="Ex: (11) 99999-8888"></textarea>
+                            </div>
+                            <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Salvar Informações</button>
+                        </form>
+
+                        <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <h5 style="margin-bottom: 1.5rem; color: #1a237e; font-size: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;">Pré-visualização em Tempo Real</h5>
+                            
+                            <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div style="width: 40px; height: 40px; background: #e3f2fd; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1a73e8; font-size: 1.2rem; flex-shrink: 0;"><i class="fas fa-map-marker-alt"></i></div>
+                                <div>
+                                    <h3 style="font-size: 1rem; color: #333; margin-bottom: 0.2rem; font-weight: 600;">Endereço</h3>
+                                    <p id="previewAddress" style="color: #666; font-size: 0.9rem; line-height: 1.5;">-</p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div style="width: 40px; height: 40px; background: #e3f2fd; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1a73e8; font-size: 1.2rem; flex-shrink: 0;"><i class="fas fa-envelope"></i></div>
+                                <div>
+                                    <h3 style="font-size: 1rem; color: #333; margin-bottom: 0.2rem; font-weight: 600;">E-mail</h3>
+                                    <p id="previewEmail" style="color: #666; font-size: 0.9rem; line-height: 1.5;">-</p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                                <div style="width: 40px; height: 40px; background: #e3f2fd; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1a73e8; font-size: 1.2rem; flex-shrink: 0;"><i class="fas fa-phone-alt"></i></div>
+                                <div>
+                                    <h3 style="font-size: 1rem; color: #333; margin-bottom: 0.2rem; font-weight: 600;">Telefone</h3>
+                                    <p id="previewPhone" style="color: #666; font-size: 0.9rem; line-height: 1.5;">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; border-top: 1px solid #eee; padding-top: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
+                        <h4 style="color: #1a237e; margin: 0;">Mensagens Recebidas</h4>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select id="filterCategory" class="form-control" style="padding: 0.4rem; font-size: 0.9rem; width: auto;" onchange="renderMessages()">
+                                <option value="all">Todas as Categorias</option>
+                                <option value="Dúvida Geral">Dúvida Geral</option>
+                                <option value="Suporte Técnico">Suporte Técnico</option>
+                                <option value="Comercial / Planos">Comercial / Planos</option>
+                                <option value="Parcerias">Parcerias</option>
+                            </select>
+                            <button onclick="markAllRead()" style="background: none; border: none; color: #1a73e8; cursor: pointer; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 5px;"><i class="fas fa-check-double"></i> Marcar todas como lidas</button>
+                        </div>
+                    </div>
+                    <p style="margin-bottom: 1rem; color: #5f6368;">Visualize as mensagens enviadas através do formulário de contato.</p>
+                    
+                    <div id="messagesList" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <footer class="footer">
+        <p>Den Sistema de Gestão Odontológica © 2026 | Versão 2.5.1</p>
+    </footer>
+
+    <script>
+        // Função de Migração
+        async function migrarPacientes() {
+            // Verifica se o usuário está logado no Firebase
+            const user = firebase.auth().currentUser;
+            
+            if (!user) {
+                alert('Erro: Você precisa estar logado no sistema (Firebase) para realizar a migração.');
+                return;
+            }
+
+            const pacientesLocal = JSON.parse(localStorage.getItem('pacientes')) || [];
+            
+            if (pacientesLocal.length === 0) {
+                alert('Não há pacientes salvos no navegador para migrar.');
+                return;
+            }
+
+            if (!confirm(`Deseja migrar ${pacientesLocal.length} pacientes para a nuvem? Isso pode levar alguns instantes.`)) {
+                return;
+            }
+
+            const btn = document.getElementById('btnMigrar');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Migrando...';
+            btn.disabled = true;
+
+            let sucesso = 0;
+            let erro = 0;
+
+            for (const p of pacientesLocal) {
+                try {
+                    // Adiciona o ID do usuário logado como 'ownerId' para respeitar as regras de segurança
+                    const docData = { ...p, ownerId: user.uid };
+                    
+                    // Usa o ID existente como ID do documento no Firestore para manter consistência
+                    await db.collection('pacientes').doc(String(p.id)).set(docData);
+                    sucesso++;
+                } catch (e) {
+                    console.error("Erro ao migrar paciente:", p.nome, e);
+                    erro++;
+                }
+            }
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            alert(`Migração concluída!\n\n✅ Sucesso: ${sucesso}\n❌ Erros: ${erro}`);
+        }
+
+        // Função de Migração de Agendamentos
+        async function migrarAgendamentos() {
+            const user = firebase.auth().currentUser;
+            
+            if (!user) {
+                alert('Erro: Você precisa estar logado no sistema (Firebase) para realizar a migração.');
+                return;
+            }
+
+            const agendamentosLocal = JSON.parse(localStorage.getItem('appointments')) || [];
+            
+            if (agendamentosLocal.length === 0) {
+                alert('Não há agendamentos salvos no navegador para migrar.');
+                return;
+            }
+
+            if (!confirm(`Deseja migrar ${agendamentosLocal.length} agendamentos para a nuvem?`)) {
+                return;
+            }
+
+            const btn = document.getElementById('btnMigrarAgenda');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Migrando...';
+            btn.disabled = true;
+
+            let sucesso = 0;
+            let erro = 0;
+
+            for (const app of agendamentosLocal) {
+                try {
+                    const docData = { ...app, ownerId: user.uid };
+                    await db.collection('appointments').doc(String(app.id)).set(docData);
+                    sucesso++;
+                } catch (e) { console.error(e); erro++; }
+            }
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            alert(`Migração de Agendamentos concluída!\n\n✅ Sucesso: ${sucesso}\n❌ Erros: ${erro}`);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const userRole = localStorage.getItem('userRole') || 'admin';
+            const userName = localStorage.getItem('userName') || 'Mateus';
+            const userTitle = localStorage.getItem('userTitle') || 'Administrador';
+
+            document.querySelector('.user-name').textContent = userName;
+            document.querySelector('.user-role').textContent = userTitle;
+            document.querySelector('.user-avatar').textContent = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+            if (userRole === 'user') {
+                const savedRestricted = localStorage.getItem('restrictedMenus');
+                const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    if (restrictedMenus.includes(link.textContent.trim())) {
+                        link.parentElement.style.display = 'none';
+                    }
+                });
+                // Bloqueia acesso à página se for usuário comum
+                alert('Acesso negado: Você não tem permissão para acessar as configurações.');
+                window.location.href = 'dashboard.html';
+            }
+
+            // --- Lógica de Permissões ---
+            // Carregar permissões atuais
+            const defaultRestricted = ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+            const savedRestricted = localStorage.getItem('restrictedMenus');
+            const currentRestricted = savedRestricted ? JSON.parse(savedRestricted) : defaultRestricted;
+
+            const checkboxes = document.querySelectorAll('#permissionsForm input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                if (cb.value !== 'Dashboard') {
+                    cb.checked = !currentRestricted.includes(cb.value);
+                }
+            });
+
+            document.getElementById('permissionsForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const newRestricted = [];
+                checkboxes.forEach(cb => {
+                    if (!cb.checked && cb.value !== 'Dashboard') {
+                        newRestricted.push(cb.value);
+                    }
+                });
+                localStorage.setItem('restrictedMenus', JSON.stringify(newRestricted));
+                alert('Permissões atualizadas com sucesso! As alterações terão efeito no próximo login dos usuários.');
+            });
+
+            // --- Lógica de Informações de Contato ---
+            const savedContactInfo = JSON.parse(localStorage.getItem('siteContactInfo')) || {};
+            
+            function updatePreview() {
+                const address = document.getElementById('contactAddress').value || 'Endereço não informado';
+                const email = document.getElementById('contactEmail').value || 'E-mail não informado';
+                const phone = document.getElementById('contactPhone').value || 'Telefone não informado';
+
+                document.getElementById('previewAddress').innerHTML = address.replace(/\n/g, '<br>');
+                document.getElementById('previewEmail').innerHTML = email.replace(/\n/g, '<br>');
+                document.getElementById('previewPhone').innerHTML = phone.replace(/\n/g, '<br>');
+            }
+
+            if (savedContactInfo.address) document.getElementById('contactAddress').value = savedContactInfo.address;
+            if (savedContactInfo.email) document.getElementById('contactEmail').value = savedContactInfo.email;
+            if (savedContactInfo.phone) document.getElementById('contactPhone').value = savedContactInfo.phone;
+
+            updatePreview();
+            document.getElementById('contactAddress').addEventListener('input', updatePreview);
+            document.getElementById('contactEmail').addEventListener('input', updatePreview);
+            document.getElementById('contactPhone').addEventListener('input', updatePreview);
+
+            document.getElementById('contactInfoForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Validação de E-mail
+                const emailVal = document.getElementById('contactEmail').value.trim();
+                if (emailVal) {
+                    // Verifica cada linha caso haja múltiplos e-mails
+                    const emails = emailVal.split('\n').map(e => e.trim()).filter(e => e);
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    const invalidEmail = emails.find(e => !emailRegex.test(e));
+                    if (invalidEmail) {
+                        alert(`O e-mail "${invalidEmail}" não parece válido. Por favor, verifique.`);
+                        return;
+                    }
+                }
+
+                const info = {
+                    address: document.getElementById('contactAddress').value,
+                    email: document.getElementById('contactEmail').value,
+                    phone: document.getElementById('contactPhone').value
+                };
+                localStorage.setItem('siteContactInfo', JSON.stringify(info));
+                alert('Informações de contato atualizadas com sucesso!');
+            });
+
+            document.getElementById('btnBackup').addEventListener('click', function() {
+                try {
+                    const data = {};
+                    // Coleta todos os dados do localStorage
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        data[key] = localStorage.getItem(key);
+                    }
+                    
+                    // Cria o arquivo JSON
+                    const json = JSON.stringify(data, null, 2);
+                    const blob = new Blob([json], {type: "application/json"});
+                    const url = URL.createObjectURL(blob);
+                    
+                    // Cria link temporário para download
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const date = new Date().toISOString().slice(0,10);
+                    a.download = `backup_den_${date}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    // Limpeza
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    alert('Backup realizado com sucesso! O arquivo foi salvo no seu dispositivo.');
+                } catch (error) {
+                    console.error('Erro ao fazer backup:', error);
+                    alert('Ocorreu um erro ao tentar realizar o backup.');
+                }
+            });
+
+            // --- Lógica de Mensagens Recebidas ---
+            window.renderMessages = function() {
+                const messages = JSON.parse(localStorage.getItem('contactMessages')) || [];
+                const container = document.getElementById('messagesList');
+                const filter = document.getElementById('filterCategory') ? document.getElementById('filterCategory').value : 'all';
+                container.innerHTML = '';
+
+                let filteredMessages = messages;
+                if (filter !== 'all') {
+                    filteredMessages = messages.filter(m => m.subject === filter);
+                }
+
+                if (filteredMessages.length === 0) {
+                    container.innerHTML = '<p style="color: #999; font-style: italic;">Nenhuma mensagem encontrada.</p>';
+                    return;
+                }
+
+                // Ordenar por data (mais recente primeiro)
+                filteredMessages.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                const categoryColors = {
+                    'Dúvida Geral': '#757575', // Cinza
+                    'Suporte Técnico': '#d32f2f', // Vermelho
+                    'Comercial / Planos': '#2e7d32', // Verde
+                    'Parcerias': '#1565c0' // Azul
+                };
+
+                filteredMessages.forEach(msg => {
+                    const date = new Date(msg.date).toLocaleString('pt-BR');
+                    const isUnread = !msg.read;
+                    const badgeColor = categoryColors[msg.subject] || '#1a73e8';
+                    
+                    const div = document.createElement('div');
+                    div.style.cssText = `background: ${isUnread ? '#e3f2fd' : '#f8f9fa'}; padding: 1.5rem; border-radius: 8px; border: 1px solid ${isUnread ? '#bbdefb' : '#eee'}; transition: background 0.3s;`;
+                    
+                    let actionsHtml = `
+                        <button onclick="deleteMessage(${msg.id})" style="background: #ffebee; color: #c62828; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s;">
+                            <i class="fas fa-trash"></i> Excluir
+                        </button>
+                    `;
+
+                    if (isUnread) {
+                        actionsHtml = `
+                            <button onclick="markAsRead(${msg.id})" style="background: #e8f5e9; color: #2e7d32; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s; margin-right: 10px;">
+                                <i class="fas fa-check"></i> Marcar como lida
+                            </button>
+                            ${actionsHtml}
+                        `;
+                    }
+
+                    div.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                ${isUnread ? '<span style="width: 10px; height: 10px; background: #1a73e8; border-radius: 50%; display: inline-block;" title="Não lida"></span>' : ''}
+                                <span style="background-color: ${badgeColor}; color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">${msg.subject}</span>
+                            </div>
+                            <span style="font-size: 0.85rem; color: #666;">${date}</span>
+                        </div>
+                        <div style="margin-bottom: 0.8rem; font-size: 0.9rem; color: #555;">
+                            <strong>De:</strong> ${msg.name} &lt;${msg.email}&gt;
+                        </div>
+                        <p style="color: #333; margin-bottom: 1rem; white-space: pre-wrap; background: white; padding: 10px; border-radius: 4px; border: 1px solid #eee;">${msg.message}</p>
+                        <div style="display: flex; justify-content: flex-end;">
+                            ${actionsHtml}
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            };
+
+            window.markAsRead = function(id) {
+                let messages = JSON.parse(localStorage.getItem('contactMessages')) || [];
+                const index = messages.findIndex(m => m.id === id);
+                if (index !== -1) {
+                    messages[index].read = true;
+                    localStorage.setItem('contactMessages', JSON.stringify(messages));
+                    renderMessages();
+                }
+            };
+
+            window.markAllRead = function() {
+                let messages = JSON.parse(localStorage.getItem('contactMessages')) || [];
+                if (messages.length === 0) return;
+                
+                if(confirm('Deseja marcar todas as mensagens como lidas?')) {
+                    messages.forEach(m => m.read = true);
+                    localStorage.setItem('contactMessages', JSON.stringify(messages));
+                    renderMessages();
+                }
+            };
+
+            window.deleteMessage = function(id) {
+                if(confirm('Tem certeza que deseja excluir esta mensagem?')) {
+                    let messages = JSON.parse(localStorage.getItem('contactMessages')) || [];
+                    messages = messages.filter(m => m.id !== id);
+                    localStorage.setItem('contactMessages', JSON.stringify(messages));
+                    renderMessages();
+                }
+            };
+
+            renderMessages();
+        });
+    </script>
+</body>
+</html>

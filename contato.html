@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contato | Den</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f4f8; color: #333; overflow-x: hidden; }
+        
+        /* Navbar */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo-container { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-symbol { font-size: 2rem; background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.5)); }
+        .logo-text { font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; color: #1a237e; }
+        
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a { text-decoration: none; color: #5f6368; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: #1a73e8; }
+        
+        .nav-buttons { display: flex; gap: 1rem; }
+        .btn { padding: 0.6rem 1.5rem; border-radius: 50px; font-weight: 600; text-decoration: none; transition: all 0.3s; cursor: pointer; }
+        .btn-outline { border: 2px solid #1a73e8; color: #1a73e8; background: transparent; }
+        .btn-outline:hover { background: #f0f8ff; }
+        .btn-primary { background: linear-gradient(90deg, #1a73e8 0%, #00e5ff 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26, 115, 232, 0.4); }
+
+        /* Contact Page Styles */
+        .contact-header { text-align: center; padding: 5rem 5% 3rem; background: linear-gradient(135deg, #f0f4f8 0%, #e3f2fd 100%); }
+        .contact-header h1 { font-size: 3.5rem; color: #1a237e; margin-bottom: 1.5rem; font-weight: 800; }
+        .contact-header p { font-size: 1.3rem; color: #5f6368; max-width: 800px; margin: 0 auto; line-height: 1.6; }
+
+        .contact-section { padding: 4rem 5%; background: white; }
+        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
+        
+        .contact-info h2 { font-size: 2rem; color: #1a237e; margin-bottom: 1.5rem; }
+        .info-item { display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 2rem; }
+        .info-icon { width: 50px; height: 50px; background: #e3f2fd; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1a73e8; font-size: 1.5rem; flex-shrink: 0; }
+        .info-content h3 { font-size: 1.2rem; color: #333; margin-bottom: 0.5rem; }
+        .info-content p { color: #666; line-height: 1.6; }
+
+        .contact-form { background: #fff; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #5f6368; }
+        .form-control { width: 100%; padding: 0.8rem; border: 1px solid #dfe1e5; border-radius: 8px; font-size: 1rem; transition: border-color 0.2s; font-family: inherit; }
+        .form-control:focus { border-color: #1a73e8; outline: none; box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1); }
+        textarea.form-control { resize: vertical; min-height: 120px; }
+
+        /* Footer */
+        .footer { background: #1a237e; color: white; padding: 3rem 5%; text-align: center; }
+        .footer p { opacity: 0.7; margin-top: 1rem; }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .container { grid-template-columns: 1fr; }
+            .contact-header h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="index.html" class="logo-container">
+            <div class="logo-symbol"><i class="fas fa-tooth"></i></div>
+            <div class="logo-text">DEN</div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html#funcionalidades">Funcionalidades</a></li>
+            <li><a href="planos.html">Planos</a></li>
+            <li><a href="sobre.html">Sobre</a></li>
+            <li><a href="contato.html" style="color: #1a73e8; font-weight: 700;">Contato</a></li>
+        </ul>
+        <div class="nav-buttons">
+            <a href="login.html" class="btn btn-outline">Entrar</a>
+            <a href="cadastro_usuario.html" class="btn btn-primary">Cadastre-se</a>
+        </div>
+    </nav>
+
+    <header class="contact-header">
+        <h1>Fale Conosco</h1>
+        <p>Estamos aqui para ajudar. Entre em contato para tirar dúvidas, enviar sugestões ou saber mais sobre nossos planos.</p>
+    </header>
+
+    <section class="contact-section">
+        <div class="container">
+            <div class="contact-info">
+                <h2>Canais de Atendimento</h2>
+                <div class="info-item">
+                    <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="info-content">
+                        <h3>Endereço</h3>
+                        <p id="displayAddress">Av. Paulista, 1000 - Bela Vista<br>São Paulo - SP, 01310-100</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-icon"><i class="fas fa-envelope"></i></div>
+                    <div class="info-content">
+                        <h3>E-mail</h3>
+                        <p id="displayEmail">contato@den.com<br>suporte@den.com</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-icon"><i class="fas fa-phone-alt"></i></div>
+                    <div class="info-content">
+                        <h3>Telefone</h3>
+                        <p id="displayPhone">(11) 99999-8888<br>Segunda a Sexta, 9h às 18h</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-form">
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="name">Nome Completo</label>
+                        <input type="text" id="name" class="form-control" placeholder="Seu nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" class="form-control" placeholder="seu@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Assunto</label>
+                        <select id="subject" class="form-control">
+                            <option value="duvida">Dúvida Geral</option>
+                            <option value="suporte">Suporte Técnico</option>
+                            <option value="vendas">Comercial / Planos</option>
+                            <option value="parceria">Parcerias</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Mensagem</label>
+                        <textarea id="message" class="form-control" placeholder="Como podemos ajudar?" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Enviar Mensagem</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="logo-symbol" style="font-size: 2rem; margin-bottom: 1rem;"><i class="fas fa-tooth"></i></div>
+        <h3>DEN FINANCEIRO</h3>
+        <p>© 2026 Den Sistema de Gestão Odontológica. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedContactInfo = JSON.parse(localStorage.getItem('siteContactInfo'));
+            if (savedContactInfo) {
+                if (savedContactInfo.address) document.getElementById('displayAddress').innerHTML = savedContactInfo.address.replace(/\n/g, '<br>');
+                if (savedContactInfo.email) document.getElementById('displayEmail').innerHTML = savedContactInfo.email.replace(/\n/g, '<br>');
+                if (savedContactInfo.phone) document.getElementById('displayPhone').innerHTML = savedContactInfo.phone.replace(/\n/g, '<br>');
+            }
+        });
+
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const emailInput = document.getElementById('email');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(emailInput.value)) {
+                alert('Por favor, insira um endereço de e-mail válido.');
+                return;
+            }
+
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            
+            btn.innerText = 'Enviando...';
+            btn.disabled = true;
+            
+            const messageData = {
+                id: Date.now(),
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').options[document.getElementById('subject').selectedIndex].text,
+                message: document.getElementById('message').value,
+                date: new Date().toISOString(),
+                read: false
+            };
+
+            // Simulação de envio
+            setTimeout(() => {
+                // Salvar mensagem no localStorage
+                const messages = JSON.parse(localStorage.getItem('contactMessages')) || [];
+                messages.push(messageData);
+                localStorage.setItem('contactMessages', JSON.stringify(messages));
+
+                alert('Mensagem enviada com sucesso! Entraremos em contato em breve.');
+                this.reset();
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

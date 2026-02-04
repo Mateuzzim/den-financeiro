@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termos de Uso | Den</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* Navbar & Footer (Padrão do Site) */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo-container { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-symbol { font-size: 2rem; background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.5)); }
+        .logo-text { font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; color: #1a237e; }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a { text-decoration: none; color: #5f6368; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: #1a73e8; }
+        .nav-buttons { display: flex; gap: 1rem; }
+        .btn { padding: 0.6rem 1.5rem; border-radius: 50px; font-weight: 600; text-decoration: none; transition: all 0.3s; }
+        .btn-outline { border: 2px solid #1a73e8; color: #1a73e8; }
+        .btn-outline:hover { background: #f0f8ff; }
+        .btn-primary { background: linear-gradient(90deg, #1a73e8 0%, #00e5ff 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26, 115, 232, 0.4); }
+        .footer { background: #1a237e; color: white; padding: 3rem 5%; text-align: center; margin-top: auto; }
+        .footer p { opacity: 0.7; margin-top: 1rem; }
+        @media (max-width: 768px) { .nav-links { display: none; } }
+
+        /* Estilos Específicos da Página de Termos */
+        .terms-header { text-align: center; padding: 5rem 5% 3rem; background: linear-gradient(135deg, #f0f4f8 0%, #e3f2fd 100%); }
+        .terms-header h1 { font-size: 3rem; color: #1a237e; margin-bottom: 1rem; font-weight: 800; }
+        .terms-header p { font-size: 1.1rem; color: #5f6368; }
+
+        .content-section { padding: 4rem 5%; background: white; flex: 1; }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        .terms-content h2 { font-size: 1.5rem; color: #1a237e; margin-top: 2.5rem; margin-bottom: 1rem; font-weight: 700; }
+        .terms-content h2:first-child { margin-top: 0; }
+        .terms-content p { font-size: 1.05rem; color: #5f6368; line-height: 1.8; margin-bottom: 1.5rem; text-align: justify; }
+        .terms-content ul { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+        .terms-content li { color: #5f6368; margin-bottom: 0.5rem; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="index.html" class="logo-container">
+            <div class="logo-symbol"><i class="fas fa-tooth"></i></div>
+            <div class="logo-text">DEN</div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html#funcionalidades">Funcionalidades</a></li>
+            <li><a href="planos.html">Planos</a></li>
+            <li><a href="sobre.html">Sobre</a></li>
+            <li><a href="contato.html">Contato</a></li>
+        </ul>
+        <div class="nav-buttons">
+            <a href="login.html" class="btn btn-outline">Entrar</a>
+            <a href="cadastro_usuario.html" class="btn btn-primary">Cadastre-se</a>
+        </div>
+    </nav>
+
+    <!-- Cabeçalho da Página -->
+    <header class="terms-header">
+        <h1>Termos de Uso</h1>
+        <p>Última atualização: 04 de Fevereiro de 2026</p>
+    </header>
+
+    <!-- Conteúdo dos Termos -->
+    <section class="content-section">
+        <div class="container">
+            <div class="terms-content">
+                <h2>1. Aceitação dos Termos</h2>
+                <p>Ao acessar e utilizar o sistema Den Financeiro Odontológico, você concorda em cumprir e ficar vinculado aos seguintes termos e condições de uso. Se você não concordar com qualquer parte destes termos, não deverá utilizar nosso serviço.</p>
+
+                <h2>2. Descrição do Serviço</h2>
+                <p>O Den é uma plataforma de gestão financeira e administrativa voltada para clínicas e consultórios odontológicos. O serviço inclui, mas não se limita a, agendamento de consultas, cadastro de pacientes, controle financeiro e emissão de relatórios.</p>
+
+                <h2>3. Cadastro e Segurança</h2>
+                <p>Para utilizar o sistema, é necessário realizar um cadastro fornecendo informações verdadeiras e completas. Você é responsável por manter a confidencialidade de sua senha e conta, sendo totalmente responsável por todas as atividades que ocorram sob sua conta.</p>
+
+                <h2>4. Privacidade de Dados</h2>
+                <p>Respeitamos a sua privacidade e a proteção dos seus dados e dos dados de seus pacientes. Todas as informações inseridas no sistema são tratadas de acordo com a nossa Política de Privacidade e em conformidade com a Lei Geral de Proteção de Dados (LGPD).</p>
+                <ul>
+                    <li>Os dados dos pacientes são de propriedade exclusiva da clínica contratante.</li>
+                    <li>Realizamos backups diários para garantir a segurança das informações.</li>
+                    <li>Não compartilhamos dados com terceiros sem autorização expressa.</li>
+                </ul>
+
+                <h2>5. Planos e Pagamentos</h2>
+                <p>O acesso ao sistema é concedido mediante a assinatura de um dos planos disponíveis (Mensal, Trimestral ou Anual). O não pagamento da assinatura poderá resultar na suspensão temporária ou cancelamento do acesso ao serviço.</p>
+
+                <h2>6. Responsabilidades do Usuário</h2>
+                <p>O usuário compromete-se a não utilizar o sistema para fins ilegais ou não autorizados. É proibido tentar violar a segurança do sistema, realizar engenharia reversa ou tentar acessar dados de outros usuários.</p>
+
+                <h2>7. Limitação de Responsabilidade</h2>
+                <p>O Den envida os melhores esforços para manter o sistema disponível 24 horas por dia, mas não garante que o serviço será ininterrupto ou livre de erros. Não nos responsabilizamos por danos diretos ou indiretos decorrentes do uso ou da impossibilidade de uso do serviço.</p>
+
+                <h2>8. Alterações nos Termos</h2>
+                <p>Reservamo-nos o direito de modificar estes termos a qualquer momento. As alterações entrarão em vigor imediatamente após a publicação no site. O uso continuado do serviço após as alterações constitui aceitação dos novos termos.</p>
+
+                <h2>9. Contato</h2>
+                <p>Se você tiver dúvidas sobre estes Termos de Uso, entre em contato conosco através do e-mail <a href="mailto:suporte@den.com" style="color: #1a73e8; text-decoration: none;">suporte@den.com</a> ou através da nossa página de contato.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="logo-symbol" style="font-size: 2rem; margin-bottom: 1rem;"><i class="fas fa-tooth"></i></div>
+        <h3>DEN FINANCEIRO</h3>
+        <p>© 2026 Den Sistema de Gestão Odontológica. Todos os direitos reservados.</p>
+        <div style="margin-top: 1.5rem; font-size: 0.9rem;">
+            <a href="termos.html" style="color: rgba(255,255,255,0.7); text-decoration: none; margin: 0 10px;">Termos de Uso</a>
+            <a href="#" style="color: rgba(255,255,255,0.7); text-decoration: none; margin: 0 10px;">Política de Privacidade</a>
+        </div>
+    </footer>
+</body>
+</html>

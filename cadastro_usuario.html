@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro | Den</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* Navbar & Footer from Index */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo-container { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-symbol { font-size: 2rem; background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.5)); }
+        .logo-text { font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; color: #1a237e; }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a { text-decoration: none; color: #5f6368; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: #1a73e8; }
+        .nav-buttons { display: flex; gap: 1rem; }
+        .btn { padding: 0.6rem 1.5rem; border-radius: 50px; font-weight: 600; text-decoration: none; transition: all 0.3s; }
+        .btn-outline { border: 2px solid #1a73e8; color: #1a73e8; }
+        .btn-outline:hover { background: #f0f8ff; }
+        .btn-primary { background: linear-gradient(90deg, #1a73e8 0%, #00e5ff 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26, 115, 232, 0.4); }
+        .footer { background: #1a237e; color: white; padding: 3rem 5%; text-align: center; margin-top: auto; }
+        .footer p { opacity: 0.7; margin-top: 1rem; }
+        @media (max-width: 768px) { .nav-links { display: none; } }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e3f2fd 100%);
+        }
+
+        .login-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        .login-container .logo-symbol { font-size: 3rem; background: linear-gradient(135deg, #1a73e8 0%, #00e5ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; filter: drop-shadow(0 4px 6px rgba(26, 115, 232, 0.3)); display: inline-block; }
+        .login-title { font-size: 2rem; font-weight: 900; letter-spacing: 1px; background: linear-gradient(90deg, #1a237e 0%, #1a73e8 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.2rem; text-transform: uppercase; }
+        .login-subtitle { color: #5f6368; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.5rem; font-weight: 600; }
+        .form-group { margin-bottom: 1rem; text-align: left; }
+        .form-group label { display: block; margin-bottom: 0.4rem; color: #5f6368; font-weight: 500; font-size: 0.9rem; }
+        .form-control {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid #dfe1e5;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus { border-color: #1a73e8; outline: none; box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2); }
+        .btn-login {
+            width: 100%;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 0.9rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 0.5rem;
+        }
+        .btn-login:hover { background-color: #1557b0; }
+        .input-icon-wrapper { position: relative; }
+        .input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9aa0a6; font-size: 0.9rem; }
+        .form-control.with-icon { padding-left: 35px; }
+        .error-message { color: #d32f2f; font-size: 0.85rem; margin-top: 0.5rem; display: none; text-align: left; }
+        .success-message { color: #2e7d32; font-size: 0.9rem; margin-bottom: 1rem; display: none; background: #e8f5e9; padding: 10px; border-radius: 6px; }
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9aa0a6;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .form-control.with-toggle { padding-right: 40px; }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="index.html" class="logo-container">
+            <div class="logo-symbol"><i class="fas fa-tooth"></i></div>
+            <div class="logo-text">DEN</div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html#funcionalidades">Funcionalidades</a></li>
+            <li><a href="planos.html">Planos</a></li>
+            <li><a href="sobre.html">Sobre</a></li>
+            <li><a href="contato.html">Contato</a></li>
+        </ul>
+        <div class="nav-buttons">
+            <a href="login.html" class="btn btn-outline">Entrar</a>
+            <a href="cadastro_usuario.html" class="btn btn-primary">Cadastre-se</a>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="login-container">
+            <div class="logo-symbol"><i class="fas fa-tooth"></i></div>
+            <h1 class="login-title">CADASTRO</h1>
+            <p class="login-subtitle">Preencha seus dados profissionais</p>
+            
+            <div id="successMsg" class="success-message">
+                <i class="fas fa-check-circle"></i> Conta criada com sucesso! Redirecionando...
+            </div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="nome">Nome Completo</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" id="nome" class="form-control with-icon" placeholder="Dr. Fulano de Tal" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="email" class="form-control with-icon" placeholder="seu@email.com" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="password" class="form-control with-icon with-toggle" placeholder="Crie uma senha" required minlength="6">
+                        <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Senha</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="confirmPassword" class="form-control with-icon with-toggle" placeholder="Repita a senha" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div id="errorMsg" class="error-message">As senhas não coincidem.</div>
+                </div>
+                
+                <button type="submit" class="btn-login">Criar Conta</button>
+            </form>
+            
+            <div style="margin-top: 1.5rem; font-size: 0.9rem; color: #5f6368;">
+                Já tem uma conta? <a href="login.html" style="color: #1a73e8; text-decoration: none; font-weight: 600;">Faça login</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="logo-symbol" style="font-size: 2rem; margin-bottom: 1rem;"><i class="fas fa-tooth"></i></div>
+        <h3>DEN FINANCEIRO</h3>
+        <p>© 2026 Den Sistema de Gestão Odontológica. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nome = document.getElementById('nome').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorMsg = document.getElementById('errorMsg');
+            
+            // Validação de senha forte
+            const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
+            if (!strongPasswordRegex.test(password)) {
+                errorMsg.textContent = 'A senha deve ter no mínimo 6 caracteres, incluindo letras maiúsculas, minúsculas e números.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            if(password !== confirmPassword) {
+                errorMsg.textContent = 'As senhas não coincidem.';
+                errorMsg.style.display = 'block';
+                return;
+            } else {
+                errorMsg.style.display = 'none';
+            }
+
+            if(nome && email && password && password === confirmPassword) {
+                const btn = document.querySelector('.btn-login');
+                const originalText = btn.innerText;
+                btn.innerText = 'Criando conta...';
+                btn.disabled = true;
+                
+                // 1. Verificar se existem outros usuários para definir a função (role)
+                db.collection('users').limit(1).get()
+                .then(snapshot => {
+                    const isFirstUser = snapshot.empty;
+                    let userRole = isFirstUser ? 'Administrador' : 'Dentista';
+
+                    if (email === 'omateus850@gmail.com') {
+                        userRole = 'Administrador';
+                    }
+
+                    // 2. Criar usuário no Firebase Auth
+                    return auth.createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        // 3. Salvar dados adicionais no Firestore com a função correta
+                        return db.collection('users').doc(userCredential.user.uid).set({
+                            name: nome,
+                            email: email,
+                            role: userRole, // Define como 'Administrador' se for o primeiro, senão 'Dentista'
+                            createdAt: new Date().toISOString()
+                        });
+                    });
+                })
+                .then(() => {
+                    // Sucesso
+                    document.getElementById('registerForm').style.display = 'none';
+                    document.getElementById('successMsg').style.display = 'block';
+                    document.querySelector('.login-subtitle').style.display = 'none';
+                    
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                })
+                .catch((error) => {
+                    // Tratamento de erro
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    
+                    let mensagem = "Erro ao cadastrar: " + error.message;
+                    if (error.code === 'auth/email-already-in-use') {
+                        mensagem = "Este e-mail já está em uso. Tente fazer login.";
+                    } else if (error.code === 'auth/operation-not-allowed') {
+                        mensagem = "Erro de configuração: O login por E-mail/Senha não está ativado no Firebase Console.";
+                    } else if (error.code === 'auth/weak-password') {
+                        mensagem = "A senha é muito fraca.";
+                    } else if (error.code === 'auth/invalid-email') {
+                        mensagem = "O e-mail informado é inválido.";
+                    }
+                    
+                    errorMsg.textContent = mensagem;
+                    errorMsg.style.display = 'block';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faturas | Den</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f4f8; color: #333; line-height: 1.6; zoom: 90%; }
+        .header { background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); color: white; padding: 1.2rem 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; }
+        .logo-container { display: flex; align-items: center; gap: 15px; }
+        .logo-symbol { font-size: 2.4rem; background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.5)); animation: pulse-glow 3s infinite alternate; }
+        .logo-text h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: 2px; background: linear-gradient(90deg, #ffffff 0%, #e3f2fd 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 0; line-height: 1; font-family: 'Segoe UI', sans-serif; }
+        .logo-text p { font-size: 0.7rem; color: #81d4fa; letter-spacing: 4px; text-transform: uppercase; margin-top: 4px; font-weight: 600; }
+        @keyframes pulse-glow { from { filter: drop-shadow(0 0 2px rgba(0, 229, 255, 0.3)); } to { filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.7)); } }
+        .user-menu { display: flex; align-items: center; gap: 20px; }
+        .user-info { text-align: right; }
+        .user-name { font-weight: 600; font-size: 1.1rem; }
+        .user-role { font-size: 0.85rem; opacity: 0.9; }
+        .user-avatar { width: 50px; height: 50px; border-radius: 50%; background-color: #bbdefb; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #0d47a1; font-size: 1.2rem; border: 3px solid rgba(255, 255, 255, 0.3); }
+        .main-container { display: flex; min-height: calc(100vh - 80px); }
+        .sidebar { width: 260px; background-color: white; padding: 2rem 0; box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
+        .nav-section { margin-bottom: 2rem; }
+        .nav-title { font-size: 0.85rem; text-transform: uppercase; color: #5f6368; font-weight: 600; padding: 0 1.5rem; margin-bottom: 0.8rem; letter-spacing: 0.5px; }
+        .nav-links { list-style: none; }
+        .nav-links li { margin-bottom: 2px; }
+        .nav-links a { display: flex; align-items: center; gap: 15px; padding: 1rem 1.5rem; color: #3c4043; text-decoration: none; font-weight: 500; transition: all 0.2s ease; border-left: 4px solid transparent; }
+        .nav-links a:hover { background-color: #f1f8ff; color: #1a73e8; border-left-color: #1a73e8; }
+        .nav-links a.active { background-color: #e8f0fe; color: #1a73e8; border-left-color: #1a73e8; font-weight: 600; }
+        .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
+        .content-area { flex: 1; padding: 2.5rem; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
+        .page-title h2 { font-size: 1.8rem; color: #1a237e; font-weight: 700; margin-bottom: 0.5rem; }
+        .page-title p { color: #5f6368; font-size: 1rem; }
+        .recent-activity { background: white; border-radius: 12px; padding: 1.8rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+        .section-title { font-size: 1.3rem; color: #1a237e; margin-bottom: 1.5rem; font-weight: 600; }
+        .footer { text-align: center; padding: 1.5rem; color: #5f6368; font-size: 0.9rem; border-top: 1px solid #eee; margin-top: 2rem; }
+        @media (max-width: 768px) { .main-container { flex-direction: column; } .sidebar { width: 100%; padding: 1.5rem; } .page-header { flex-direction: column; align-items: flex-start; } }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <div class="logo-symbol"><i class="fas fa-tooth"></i></div>
+            <div class="logo-text">
+                <h1>DEN</h1>
+                <p>FINANCEIRO</p>
+            </div>
+        </div>
+        <div class="user-menu">
+            <div class="user-info">
+                <div class="user-name">Mateus</div>
+                <div class="user-role">Administrador</div>
+            </div>
+            <div class="user-avatar">M</div>
+            <a href="index.html" style="color: white; opacity: 0.8; font-size: 1.2rem; margin-left: 10px;" title="Sair"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </header>
+    <div class="main-container">
+        <nav class="sidebar">
+            <div class="nav-section">
+                <h3 class="nav-title">Menu Principal</h3>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
+                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Agendamento</a></li>
+                    <li><a href="paciente.html"><i class="fas fa-user-injured nav-icon"></i> Pacientes</a></li>
+                    <li><a href="financeiro.html"><i class="fas fa-chart-line nav-icon"></i> Financeiro</a></li>
+                    <li><a href="profissonal.html"><i class="fas fa-user-md nav-icon"></i> Profissional</a></li>
+                    <li><a href="relatorios.html"><i class="fas fa-chart-pie nav-icon"></i> Relatórios</a></li>
+                </ul>
+            </div>
+            <div class="nav-section">
+                <h3 class="nav-title">Ferramentas</h3>
+                <ul class="nav-links">
+                    <li><a href="faturas.html" class="active"><i class="fas fa-file-invoice-dollar nav-icon"></i> Faturas</a></li>
+                    <li><a href="configurações.html"><i class="fas fa-cogs nav-icon"></i> Configurações</a></li>
+                    <li><a href="usuarios.html"><i class="fas fa-users-cog nav-icon"></i> Usuários</a></li>
+                    <li><a href="ajuda.html"><i class="fas fa-question-circle nav-icon"></i> Ajuda</a></li>
+                </ul>
+            </div>
+        </nav>
+        <main class="content-area">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Faturas</h2>
+                </div>
+                <div class="current-date"><strong>Data atual:</strong> 04 de Fevereiro de 2026</div>
+            </div>
+            <div class="recent-activity">
+                <h3 class="section-title">Histórico de Faturas</h3>
+                <p>Visualize e emita faturas para seus pacientes aqui.</p>
+            </div>
+        </main>
+    </div>
+    <footer class="footer">
+        <p>Den Sistema de Gestão Odontológica © 2026 | Versão 2.5.1</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar Autenticação Firebase
+            auth.onAuthStateChanged((user) => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                }
+            });
+
+            const userRole = localStorage.getItem('userRole') || 'admin';
+            const userName = localStorage.getItem('userName') || 'Mateus';
+            const userTitle = localStorage.getItem('userTitle') || 'Administrador';
+
+            document.querySelector('.user-name').textContent = userName;
+            document.querySelector('.user-role').textContent = userTitle;
+            document.querySelector('.user-avatar').textContent = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+            if (userRole === 'user') {
+                const savedRestricted = localStorage.getItem('restrictedMenus');
+                const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    if (restrictedMenus.includes(link.textContent.trim())) {
+                        link.parentElement.style.display = 'none';
+                    }
+                });
+                if (restrictedMenus.includes('Faturas')) {
+                    alert('Acesso negado: Você não tem permissão para acessar este módulo.');
+                    window.location.href = 'dashboard.html';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuários | Den</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f4f8; color: #333; line-height: 1.6; zoom: 90%; }
+        .header { background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); color: white; padding: 1.2rem 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; }
+        .logo-container { display: flex; align-items: center; gap: 15px; }
+        .logo-symbol { font-size: 2.4rem; background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.5)); animation: pulse-glow 3s infinite alternate; }
+        .logo-text h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: 2px; background: linear-gradient(90deg, #ffffff 0%, #e3f2fd 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 0; line-height: 1; font-family: 'Segoe UI', sans-serif; }
+        .logo-text p { font-size: 0.7rem; color: #81d4fa; letter-spacing: 4px; text-transform: uppercase; margin-top: 4px; font-weight: 600; }
+        @keyframes pulse-glow { from { filter: drop-shadow(0 0 2px rgba(0, 229, 255, 0.3)); } to { filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.7)); } }
+        .user-menu { display: flex; align-items: center; gap: 20px; }
+        .user-info { text-align: right; }
+        .user-name { font-weight: 600; font-size: 1.1rem; }
+        .user-role { font-size: 0.85rem; opacity: 0.9; }
+        .user-avatar { width: 50px; height: 50px; border-radius: 50%; background-color: #bbdefb; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #0d47a1; font-size: 1.2rem; border: 3px solid rgba(255, 255, 255, 0.3); }
+        .main-container { display: flex; min-height: calc(100vh - 80px); }
+        .sidebar { width: 260px; background-color: white; padding: 2rem 0; box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
+        .nav-section { margin-bottom: 2rem; }
+        .nav-title { font-size: 0.85rem; text-transform: uppercase; color: #5f6368; font-weight: 600; padding: 0 1.5rem; margin-bottom: 0.8rem; letter-spacing: 0.5px; }
+        .nav-links { list-style: none; }
+        .nav-links li { margin-bottom: 2px; }
+        .nav-links a { display: flex; align-items: center; gap: 15px; padding: 1rem 1.5rem; color: #3c4043; text-decoration: none; font-weight: 500; transition: all 0.2s ease; border-left: 4px solid transparent; }
+        .nav-links a:hover { background-color: #f1f8ff; color: #1a73e8; border-left-color: #1a73e8; }
+        .nav-links a.active { background-color: #e8f0fe; color: #1a73e8; border-left-color: #1a73e8; font-weight: 600; }
+        .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
+        .content-area { flex: 1; padding: 2.5rem; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
+        .page-title h2 { font-size: 1.8rem; color: #1a237e; font-weight: 700; margin-bottom: 0.5rem; }
+        .page-title p { color: #5f6368; font-size: 1rem; }
+        .recent-activity { background: white; border-radius: 12px; padding: 1.8rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+        .section-title { font-size: 1.3rem; color: #1a237e; margin-bottom: 1.5rem; font-weight: 600; }
+        .footer { text-align: center; padding: 1.5rem; color: #5f6368; font-size: 0.9rem; border-top: 1px solid #eee; margin-top: 2rem; }
+        
+        /* Tabela de Usuários */
+        .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .table th, .table td { padding: 1rem; text-align: left; border-bottom: 1px solid #eee; }
+        .table th { font-weight: 600; color: #5f6368; background-color: #f8f9fa; }
+        .table tr:hover { background-color: #f8f9fa; }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+        .status-active { background-color: #e8f5e9; color: #2e7d32; }
+        .status-inactive { background-color: #ffebee; color: #c62828; }
+        .btn-action { background: none; border: none; cursor: pointer; color: #5f6368; transition: color 0.2s; margin-right: 5px; }
+        .btn-action:hover { color: #1a73e8; }
+        
+        /* Paginação */
+        .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; }
+        .btn-page { background-color: white; border: 1px solid #dfe1e5; padding: 0.5rem 0.8rem; border-radius: 4px; cursor: pointer; transition: all 0.2s; color: #5f6368; }
+        .btn-page:hover:not(:disabled) { background-color: #f1f8ff; color: #1a73e8; border-color: #1a73e8; }
+        .btn-page.active { background-color: #1a73e8; color: white; border-color: #1a73e8; }
+        .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #eee; padding-bottom: 1rem; }
+        .modal-title { font-size: 1.3rem; color: #1a237e; font-weight: 700; }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #5f6368; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #5f6368; }
+        .form-control { width: 100%; padding: 0.7rem; border: 1px solid #dfe1e5; border-radius: 6px; font-size: 0.95rem; }
+
+        @media (max-width: 768px) { .main-container { flex-direction: column; } .sidebar { width: 100%; padding: 1.5rem; } .page-header { flex-direction: column; align-items: flex-start; } }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <div class="logo-symbol"><i class="fas fa-tooth"></i></div>
+            <div class="logo-text">
+                <h1>DEN</h1>
+                <p>FINANCEIRO</p>
+            </div>
+        </div>
+        <div class="user-menu">
+            <div class="user-info">
+                <div class="user-name">Mateus</div>
+                <div class="user-role">Administrador</div>
+            </div>
+            <div class="user-avatar">M</div>
+            <a href="index.html" style="color: white; opacity: 0.8; font-size: 1.2rem; margin-left: 10px;" title="Sair"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </header>
+    <div class="main-container">
+        <nav class="sidebar">
+            <div class="nav-section">
+                <h3 class="nav-title">Menu Principal</h3>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
+                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Agendamento</a></li>
+                    <li><a href="paciente.html"><i class="fas fa-user-injured nav-icon"></i> Pacientes</a></li>
+                    <li><a href="financeiro.html"><i class="fas fa-chart-line nav-icon"></i> Financeiro</a></li>
+                    <li><a href="profissonal.html"><i class="fas fa-user-md nav-icon"></i> Profissional</a></li>
+                    <li><a href="relatorios.html"><i class="fas fa-chart-pie nav-icon"></i> Relatórios</a></li>
+                </ul>
+            </div>
+            <div class="nav-section">
+                <h3 class="nav-title">Ferramentas</h3>
+                <ul class="nav-links">
+                    <li><a href="faturas.html"><i class="fas fa-file-invoice-dollar nav-icon"></i> Faturas</a></li>
+                    <li><a href="configurações.html"><i class="fas fa-cogs nav-icon"></i> Configurações</a></li>
+                    <li><a href="usuarios.html" class="active"><i class="fas fa-users-cog nav-icon"></i> Usuários</a></li>
+                    <li><a href="ajuda.html"><i class="fas fa-question-circle nav-icon"></i> Ajuda</a></li>
+                </ul>
+            </div>
+        </nav>
+        <main class="content-area">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Gestão de Usuários</h2>
+                    <p>Acompanhe os cadastros, acessos e vencimentos.</p>
+                </div>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <button onclick="abrirModalNovoUsuario()" style="background: #1a73e8; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600; color: white; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                        <i class="fas fa-plus"></i> Novo Usuário
+                    </button>
+                    <button onclick="enviarAvisosVencimento()" style="background: #fff3e0; border: 1px solid #ffe0b2; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600; color: #e65100; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                        <i class="fas fa-envelope"></i> Enviar Avisos
+                    </button>
+                    <button onclick="abrirModalLogs()" style="background: white; border: 1px solid #dfe1e5; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600; color: #5f6368; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                        <i class="fas fa-history"></i> Logs de Auditoria
+                    </button>
+                    <div class="current-date"><strong>Data atual:</strong> 04 de Fevereiro de 2026</div>
+                </div>
+            </div>
+            <div class="recent-activity">
+                <h3 class="section-title">Usuários do Sistema</h3>
+                <div style="margin-bottom: 1rem;">
+                    <input type="text" id="searchUser" class="form-control" placeholder="🔍 Buscar por nome ou e-mail..." oninput="paginaAtual = 1; renderUsers()">
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Função</th>
+                                <th>Plano</th>
+                                <th>Último Acesso</th>
+                                <th>Vencimento Plano</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Preenchido via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="paginacao" class="pagination"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Editar Usuário -->
+    <div id="modalEditarUsuario" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Editar Usuário</h3>
+                <button class="close-modal" onclick="fecharModalUsuario()">&times;</button>
+            </div>
+            <form id="formEditarUsuario">
+                <input type="hidden" id="editUserId">
+                <div class="form-group">
+                    <label>Nome</label>
+                    <input type="text" id="editUserName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" id="editUserEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Função</label>
+                    <select id="editUserRole" class="form-control">
+                        <option value="Administrador">Administrador</option>
+                        <option value="Dentista">Dentista</option>
+                        <option value="Recepcionista">Recepcionista</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Plano de Acesso</label>
+                    <select id="editUserPlan" class="form-control" onchange="calcularVencimento()">
+                        <option value="Mensal">Mensal</option>
+                        <option value="Trimestral">Trimestral</option>
+                        <option value="Anual">Anual</option>
+                        <option value="Vitalício">Vitalício</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Vencimento Plano</label>
+                    <input type="text" id="editUserExpire" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="editUserStatus" class="form-control">
+                        <option value="active">Ativo</option>
+                        <option value="inactive">Inativo</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Novo Usuário -->
+    <div id="modalNovoUsuario" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Novo Usuário</h3>
+                <button class="close-modal" onclick="fecharModalNovoUsuario()">&times;</button>
+            </div>
+            <form id="formNovoUsuario">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="newUserName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>E-mail (Login)</label>
+                    <input type="email" id="newUserEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Senha Inicial</label>
+                    <input type="text" id="newUserPassword" class="form-control" required minlength="6" placeholder="Mínimo 6 caracteres">
+                </div>
+                <div class="form-group">
+                    <label>Função</label>
+                    <select id="newUserRole" class="form-control">
+                        <option value="Dentista">Dentista</option>
+                        <option value="Recepcionista">Recepcionista</option>
+                        <option value="Administrador">Administrador</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Plano</label>
+                    <select id="newUserPlan" class="form-control">
+                        <option value="Mensal">Mensal</option>
+                        <option value="Trimestral">Trimestral</option>
+                        <option value="Anual">Anual</option>
+                        <option value="Vitalício">Vitalício</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">Criar Conta</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Logs de Auditoria -->
+    <div id="modalLogs" class="modal-overlay">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Logs de Auditoria</h3>
+                <button class="close-modal" onclick="fecharModalLogs()">&times;</button>
+            </div>
+            <div style="overflow-y: auto; max-height: 60vh;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Responsável</th>
+                            <th>Ação</th>
+                            <th>Usuário Afetado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <!-- Preenchido via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Den Sistema de Gestão Odontológica © 2026 | Versão 2.5.1</p>
+    </footer>
+
+    <script>
+        // Lista de usuários (vinda do Firestore)
+        let users = [];
+        const ITENS_POR_PAGINA = 5;
+        let paginaAtual = 1;
+
+        function parseDate(dateStr) {
+            if (!dateStr || dateStr === 'Vitalício' || dateStr === 'Vinculado') return null;
+            const parts = dateStr.split('/');
+            if (parts.length !== 3) return null;
+            return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        }
+
+        function verificarVencimentos() {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            let changed = false;
+
+            users.forEach(user => {
+                if (user.status === 'active') {
+                    const expireDate = parseDate(user.expire);
+                    if (expireDate && expireDate < now) {
+                        user.status = 'inactive';
+                        logAudit('Bloqueio Automático (Vencido)', user.name);
+                        changed = true;
+                    }
+                }
+            });
+
+            if (changed) {
+                alert('Sistema: Usuários com planos vencidos foram bloqueados automaticamente.');
+            }
+        }
+
+        function enviarAvisosVencimento() {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const warningThreshold = new Date();
+            warningThreshold.setDate(now.getDate() + 7); // 7 dias a partir de hoje
+
+            let count = 0;
+            let usersToWarn = [];
+
+            users.forEach(user => {
+                if (user.status === 'active') {
+                    const expireDate = parseDate(user.expire);
+                    if (expireDate && expireDate >= now && expireDate <= warningThreshold) {
+                        usersToWarn.push(user.name);
+                        logAudit('E-mail de Aviso (Vencimento)', user.name);
+                        count++;
+                    }
+                }
+            });
+
+            if (count > 0) {
+                alert(`E-mails de aviso enviados com sucesso para:\n- ${usersToWarn.join('\n- ')}`);
+            } else {
+                alert('Nenhum usuário com vencimento próximo (7 dias) encontrado.');
+            }
+        }
+
+        function renderUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            const searchTerm = document.getElementById('searchUser') ? document.getElementById('searchUser').value.toLowerCase() : '';
+            tbody.innerHTML = '';
+            
+            const filteredUsers = users.filter(user => 
+                user.name.toLowerCase().includes(searchTerm) || 
+                user.email.toLowerCase().includes(searchTerm)
+            );
+            
+            // Paginação
+            const totalPaginas = Math.ceil(filteredUsers.length / ITENS_POR_PAGINA);
+            
+            if (paginaAtual > totalPaginas && totalPaginas > 0) paginaAtual = totalPaginas;
+            if (paginaAtual < 1) paginaAtual = 1;
+
+            const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
+            const fim = inicio + ITENS_POR_PAGINA;
+            const usersPagina = filteredUsers.slice(inicio, fim);
+            
+            usersPagina.forEach(user => {
+                // Verificação visual de vencimento próximo
+                const expireDate = parseDate(user.expire);
+                const now = new Date();
+                now.setHours(0,0,0,0);
+                const warningThreshold = new Date();
+                warningThreshold.setDate(now.getDate() + 7);
+                const isExpiringSoon = user.status === 'active' && expireDate && expireDate >= now && expireDate <= warningThreshold;
+
+                const statusClass = user.status === 'active' ? 'status-active' : 'status-inactive';
+                const statusText = user.status === 'active' ? 'Ativo' : 'Inativo';
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${user.name}</strong></td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td><span style="background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">${user.plan || 'Mensal'}</span></td>
+                    <td>${user.lastAccess}</td>
+                    <td style="${isExpiringSoon ? 'color: #e65100; font-weight: 600;' : ''}">
+                        ${user.expire} ${isExpiringSoon ? '<i class="fas fa-exclamation-triangle" title="Vence em breve (7 dias)"></i>' : ''}
+                    </td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>
+                        <button class="btn-action" title="Editar" onclick="abrirModalUsuario('${user.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-action" title="Bloquear/Desbloquear" onclick="toggleStatus('${user.id}')"><i class="fas fa-ban"></i></button>
+                        <button class="btn-action" style="color: #d32f2f;" title="Excluir" onclick="excluirUsuario('${user.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            renderizarPaginacao(totalPaginas);
+        }
+
+        function renderizarPaginacao(totalPaginas) {
+            const paginationContainer = document.getElementById('paginacao');
+            paginationContainer.innerHTML = '';
+
+            if (totalPaginas <= 1) return;
+
+            // Botão Anterior
+            const btnPrev = document.createElement('button');
+            btnPrev.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            btnPrev.className = 'btn-page';
+            btnPrev.disabled = paginaAtual === 1;
+            btnPrev.onclick = () => {
+                if (paginaAtual > 1) {
+                    paginaAtual--;
+                    renderUsers();
+                }
+            };
+            paginationContainer.appendChild(btnPrev);
+
+            // Números das páginas
+            for (let i = 1; i <= totalPaginas; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.className = `btn-page ${i === paginaAtual ? 'active' : ''}`;
+                btn.onclick = () => {
+                    paginaAtual = i;
+                    renderUsers();
+                };
+                paginationContainer.appendChild(btn);
+            }
+
+            // Botão Próximo
+            const btnNext = document.createElement('button');
+            btnNext.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            btnNext.className = 'btn-page';
+            btnNext.disabled = paginaAtual === totalPaginas;
+            btnNext.onclick = () => {
+                if (paginaAtual < totalPaginas) {
+                    paginaAtual++;
+                    renderUsers();
+                }
+            };
+            paginationContainer.appendChild(btnNext);
+        }
+
+        function calcularVencimento() {
+            const plan = document.getElementById('editUserPlan').value;
+            const expireInput = document.getElementById('editUserExpire');
+            
+            if (plan === 'Vitalício') {
+                expireInput.value = 'Vitalício';
+                return;
+            }
+            
+            const now = new Date();
+            
+            if (plan === 'Mensal') now.setMonth(now.getMonth() + 1);
+            else if (plan === 'Trimestral') now.setMonth(now.getMonth() + 3);
+            else if (plan === 'Anual') now.setFullYear(now.getFullYear() + 1);
+            
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            
+            expireInput.value = `${day}/${month}/${year}`;
+        }
+
+        function abrirModalUsuario(id) {
+            const user = users.find(u => u.id === id);
+            if (user) {
+                document.getElementById('editUserId').value = user.id;
+                document.getElementById('editUserName').value = user.name;
+                document.getElementById('editUserEmail').value = user.email;
+                document.getElementById('editUserRole').value = user.role;
+                document.getElementById('editUserPlan').value = user.plan || 'Mensal';
+                document.getElementById('editUserExpire').value = user.expire;
+                document.getElementById('editUserStatus').value = user.status;
+                document.getElementById('modalEditarUsuario').style.display = 'flex';
+            }
+        }
+
+        function fecharModalUsuario() {
+            document.getElementById('modalEditarUsuario').style.display = 'none';
+        }
+
+        function toggleStatus(id) {
+            const user = users.find(u => u.id === id);
+            if (user) {
+                const newStatus = user.status === 'active' ? 'inactive' : 'active';
+                db.collection('users').doc(id).update({ status: newStatus })
+                    .then(() => logAudit('Alterou status', user.name))
+                    .catch(err => alert('Erro ao alterar status: ' + err.message));
+            }
+        }
+
+        function excluirUsuario(id) {
+            const user = users.find(u => u.id === id);
+            if(user && confirm('Tem certeza que deseja excluir este usuário?')) {
+                db.collection('users').doc(id).delete()
+                    .then(() => logAudit('Excluiu usuário', user.name))
+                    .catch(err => alert('Erro ao excluir: ' + err.message));
+            }
+        }
+
+        // --- Funções de Criação de Usuário (Admin) ---
+        function abrirModalNovoUsuario() {
+            document.getElementById('formNovoUsuario').reset();
+            document.getElementById('modalNovoUsuario').style.display = 'flex';
+        }
+
+        function fecharModalNovoUsuario() {
+            document.getElementById('modalNovoUsuario').style.display = 'none';
+        }
+
+        document.getElementById('formNovoUsuario').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            btn.innerText = 'Criando...';
+            btn.disabled = true;
+
+            const nome = document.getElementById('newUserName').value;
+            const email = document.getElementById('newUserEmail').value;
+            const password = document.getElementById('newUserPassword').value;
+            const role = document.getElementById('newUserRole').value;
+            const plan = document.getElementById('newUserPlan').value;
+
+            // Inicializa um app secundário para criar o usuário sem deslogar o admin
+            const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
+            
+            try {
+                // Cria o usuário no Auth
+                const userCredential = await secondaryApp.auth().createUserWithEmailAndPassword(email, password);
+                
+                // Salva os dados no Firestore (usando o app principal logado como admin)
+                await db.collection('users').doc(userCredential.user.uid).set({
+                    name: nome,
+                    email: email,
+                    role: role,
+                    plan: plan,
+                    status: 'active',
+                    createdAt: new Date().toISOString(),
+                    expire: calcularDataVencimento(plan)
+                });
+
+                logAudit('Criou usuário', nome);
+                alert(`Usuário ${nome} criado com sucesso!\nLogin: ${email}\nSenha: ${password}`);
+                fecharModalNovoUsuario();
+                
+                // Limpeza
+                await secondaryApp.auth().signOut();
+                secondaryApp.delete();
+            } catch (error) {
+                alert("Erro ao criar usuário: " + error.message);
+                secondaryApp.delete();
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        function calcularDataVencimento(plan) {
+            if (plan === 'Vitalício') return 'Vitalício';
+            const now = new Date();
+            if (plan === 'Mensal') now.setMonth(now.getMonth() + 1);
+            else if (plan === 'Trimestral') now.setMonth(now.getMonth() + 3);
+            else if (plan === 'Anual') now.setFullYear(now.getFullYear() + 1);
+            
+            const d = String(now.getDate()).padStart(2, '0');
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const y = now.getFullYear();
+            return `${d}/${m}/${y}`;
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('modalEditarUsuario').addEventListener('click', function(e) {
+            if (e.target === this) fecharModalUsuario();
+        });
+
+        // Salvar Edição
+        document.getElementById('formEditarUsuario').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('editUserId').value;
+            
+            const updatedData = {
+                name: document.getElementById('editUserName').value,
+                email: document.getElementById('editUserEmail').value,
+                role: document.getElementById('editUserRole').value,
+                plan: document.getElementById('editUserPlan').value,
+                expire: document.getElementById('editUserExpire').value,
+                status: document.getElementById('editUserStatus').value
+            };
+
+            db.collection('users').doc(id).update(updatedData).then(() => {
+                logAudit('Editou dados', updatedData.name);
+                fecharModalUsuario();
+                alert('Usuário atualizado com sucesso!');
+            }).catch(err => alert('Erro ao atualizar: ' + err.message));
+        });
+
+        // --- Sistema de Auditoria ---
+        function logAudit(acao, alvo) {
+            const logs = JSON.parse(localStorage.getItem('auditLogs')) || [];
+            const actor = localStorage.getItem('userName') || 'Desconhecido';
+            const newLog = {
+                id: Date.now(),
+                timestamp: new Date().toLocaleString('pt-BR'),
+                actor: actor,
+                action: acao,
+                target: alvo
+            };
+            logs.unshift(newLog); // Adiciona no início
+            localStorage.setItem('auditLogs', JSON.stringify(logs));
+        }
+
+        function abrirModalLogs() {
+            const logs = JSON.parse(localStorage.getItem('auditLogs')) || [];
+            const tbody = document.getElementById('logsTableBody');
+            tbody.innerHTML = '';
+
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">Nenhum registro encontrado.</td></tr>';
+            } else {
+                logs.forEach(log => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-size: 0.9rem;">${log.timestamp}</td>
+                            <td><strong>${log.actor}</strong></td>
+                            <td>${log.action}</td>
+                            <td>${log.target}</td>
+                        </tr>
+                    `;
+                });
+            }
+            document.getElementById('modalLogs').style.display = 'flex';
+        }
+
+        function fecharModalLogs() {
+            document.getElementById('modalLogs').style.display = 'none';
+        }
+        
+        document.getElementById('modalLogs').addEventListener('click', function(e) {
+            if (e.target === this) fecharModalLogs();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar Autenticação Firebase
+            auth.onAuthStateChanged((user) => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                }
+            });
+
+            const userRole = localStorage.getItem('userRole') || 'admin';
+            const userName = localStorage.getItem('userName') || 'Mateus';
+            const userTitle = localStorage.getItem('userTitle') || 'Administrador';
+
+            // Bloqueio de Segurança: Apenas Admin pode ver esta página
+            if (userRole !== 'admin') {
+                alert('Acesso negado: Apenas administradores podem acessar a gestão de usuários.');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            document.querySelector('.user-name').textContent = userName;
+            document.querySelector('.user-role').textContent = userTitle;
+            document.querySelector('.user-avatar').textContent = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+            // Carregar Usuários do Firestore em Tempo Real
+            db.collection('users').onSnapshot((snapshot) => {
+                users = [];
+                snapshot.forEach((doc) => {
+                    users.push({ id: doc.id, ...doc.data() });
+                });
+                // Ordenar por nome
+                users.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                renderUsers();
+                verificarVencimentos(); // Verifica vencimentos sempre que a lista atualiza
+            }, (error) => {
+                console.error("Erro ao carregar usuários:", error);
+            });
+        });
+    </script>
+</body>
+</html>

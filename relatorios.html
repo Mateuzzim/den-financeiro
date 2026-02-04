@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios | Den</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f4f8; color: #333; line-height: 1.6; zoom: 90%; }
+        .header { background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); color: white; padding: 1.2rem 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; }
+        .logo-container { display: flex; align-items: center; gap: 15px; }
+        .logo-symbol { font-size: 2.4rem; background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.5)); animation: pulse-glow 3s infinite alternate; }
+        .logo-text h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: 2px; background: linear-gradient(90deg, #ffffff 0%, #e3f2fd 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 0; line-height: 1; font-family: 'Segoe UI', sans-serif; }
+        .logo-text p { font-size: 0.7rem; color: #81d4fa; letter-spacing: 4px; text-transform: uppercase; margin-top: 4px; font-weight: 600; }
+        @keyframes pulse-glow { from { filter: drop-shadow(0 0 2px rgba(0, 229, 255, 0.3)); } to { filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.7)); } }
+        .mobile-menu-btn { display: none; background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; margin-right: 10px; }
+        .user-menu { display: flex; align-items: center; gap: 20px; }
+        .user-info { text-align: right; }
+        .user-name { font-weight: 600; font-size: 1.1rem; }
+        .user-role { font-size: 0.85rem; opacity: 0.9; }
+        .user-avatar { width: 50px; height: 50px; border-radius: 50%; background-color: #bbdefb; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #0d47a1; font-size: 1.2rem; border: 3px solid rgba(255, 255, 255, 0.3); }
+        .main-container { display: flex; min-height: calc(100vh - 80px); }
+        .sidebar { width: 260px; background-color: white; padding: 2rem 0; box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
+        .nav-section { margin-bottom: 2rem; }
+        .nav-title { font-size: 0.85rem; text-transform: uppercase; color: #5f6368; font-weight: 600; padding: 0 1.5rem; margin-bottom: 0.8rem; letter-spacing: 0.5px; }
+        .nav-links { list-style: none; }
+        .nav-links li { margin-bottom: 2px; }
+        .nav-links a { display: flex; align-items: center; gap: 15px; padding: 1rem 1.5rem; color: #3c4043; text-decoration: none; font-weight: 500; transition: all 0.2s ease; border-left: 4px solid transparent; }
+        .nav-links a:hover { background-color: #f1f8ff; color: #1a73e8; border-left-color: #1a73e8; }
+        .nav-links a.active { background-color: #e8f0fe; color: #1a73e8; border-left-color: #1a73e8; font-weight: 600; }
+        .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
+        .content-area { flex: 1; padding: 2.5rem; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
+        .page-title h2 { font-size: 1.8rem; color: #1a237e; font-weight: 700; margin-bottom: 0.5rem; }
+        .page-title p { color: #5f6368; font-size: 1rem; }
+        .recent-activity { background: white; border-radius: 12px; padding: 1.8rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+        .section-title { font-size: 1.3rem; color: #1a237e; margin-bottom: 1.5rem; font-weight: 600; }
+        .footer { text-align: center; padding: 1.5rem; color: #5f6368; font-size: 0.9rem; border-top: 1px solid #eee; margin-top: 2rem; }
+        @media (max-width: 768px) { 
+            .main-container { flex-direction: column; } 
+            .sidebar { width: 100%; padding: 1rem; display: none; } 
+            .sidebar.active { display: block; animation: slideDown 0.3s ease-out; }
+            .page-header { flex-direction: column; align-items: flex-start; } 
+            .mobile-menu-btn { display: block; }
+        }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Estilos para Relatórios */
+        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .summary-card { background: #fff; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #1a73e8; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .summary-card h4 { font-size: 0.9rem; color: #5f6368; margin-bottom: 0.5rem; }
+        .summary-card .value { font-size: 1.8rem; font-weight: 700; color: #1a237e; }
+        .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        .chart-container { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #eee; min-height: 300px; }
+        
+        /* Estilos Modernos para Filtros */
+        .filters-bar { display: flex; gap: 1.5rem; margin-top: 2rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: flex-end; background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .form-group label { font-size: 0.9rem; font-weight: 600; color: #5f6368; }
+        .form-control { padding: 0.7rem 1rem; border: 1px solid #dfe1e5; border-radius: 8px; font-size: 0.95rem; min-width: 160px; outline: none; transition: all 0.2s; }
+        .form-control:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1); }
+        .btn-primary { background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; height: 42px; font-size: 0.95rem; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3); }
+        .btn-danger { background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%); box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2); }
+        .btn-danger:hover { box-shadow: 0 6px 15px rgba(211, 47, 47, 0.3); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div style="display: flex; align-items: center;">
+            <button class="mobile-menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+            <div class="logo-container">
+                <div class="logo-symbol"><i class="fas fa-tooth"></i></div>
+                <div class="logo-text">
+                    <h1>DEN</h1>
+                    <p>FINANCEIRO</p>
+                </div>
+            </div>
+        </div>
+        <div class="user-menu">
+            <div class="user-info">
+                <div class="user-name">Mateus</div>
+                <div class="user-role">Administrador</div>
+            </div>
+            <div class="user-avatar">M</div>
+            <a href="index.html" style="color: white; opacity: 0.8; font-size: 1.2rem; margin-left: 10px;" title="Sair"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </header>
+    <div class="main-container">
+        <nav class="sidebar">
+            <div class="nav-section">
+                <h3 class="nav-title">Menu Principal</h3>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
+                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Agendamento</a></li>
+                    <li><a href="paciente.html"><i class="fas fa-user-injured nav-icon"></i> Pacientes</a></li>
+                    <li><a href="financeiro.html"><i class="fas fa-chart-line nav-icon"></i> Financeiro</a></li>
+                    <li><a href="profissonal.html"><i class="fas fa-user-md nav-icon"></i> Profissional</a></li>
+                    <li><a href="relatorios.html" class="active"><i class="fas fa-chart-pie nav-icon"></i> Relatórios</a></li>
+                </ul>
+            </div>
+            <div class="nav-section">
+                <h3 class="nav-title">Ferramentas</h3>
+                <ul class="nav-links">
+                    <li><a href="faturas.html"><i class="fas fa-file-invoice-dollar nav-icon"></i> Faturas</a></li>
+                    <li><a href="configurações.html"><i class="fas fa-cogs nav-icon"></i> Configurações</a></li>
+                    <li><a href="usuarios.html"><i class="fas fa-users-cog nav-icon"></i> Usuários</a></li>
+                    <li><a href="ajuda.html"><i class="fas fa-question-circle nav-icon"></i> Ajuda</a></li>
+                </ul>
+            </div>
+        </nav>
+        <main class="content-area">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Relatórios</h2>
+                </div>
+                <div class="current-date"><strong>Data atual:</strong> 04 de Fevereiro de 2026</div>
+            </div>
+            <div class="recent-activity">
+                <!-- Seção Exclusiva do Administrador (Usuários do Sistema) -->
+                <div id="adminReportsSection">
+                    <h3 class="section-title">Relatório de Usuários do Sistema</h3>
+                    <p style="color: #666; margin-bottom: 2rem;">Análise detalhada da base de usuários, distribuição por planos e perfis de acesso.</p>
+
+                    <!-- Cards de Resumo -->
+                    <div class="summary-cards">
+                        <div class="summary-card">
+                            <h4>Total de Usuários</h4>
+                            <div class="value" id="totalUsers">0</div>
+                        </div>
+                        <div class="summary-card" style="border-left-color: #2e7d32;">
+                            <h4>Usuários Ativos</h4>
+                            <div class="value" id="activeUsers">0</div>
+                        </div>
+                        <div class="summary-card" style="border-left-color: #f57c00;">
+                            <h4>Planos Pagos</h4>
+                            <div class="value" id="paidPlans">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Gráficos -->
+                    <div class="report-grid">
+                        <div class="chart-container">
+                            <h4 style="margin-bottom: 1rem; color: #1a237e;">Distribuição por Função</h4>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="rolesChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h4 style="margin-bottom: 1rem; color: #1a237e;">Distribuição por Plano</h4>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="plansChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="section-title" style="margin-top: 3rem;">Financeiro (Estimativa)</h3>
+                    <div class="report-grid">
+                        <div class="chart-container">
+                            <h4 style="margin-bottom: 1rem; color: #1a237e;">Receita por Tipo de Plano</h4>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="financialChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="summary-card" style="height: 100%; display: flex; flex-direction: column; justify-content: center; border-left-color: #2e7d32;">
+                            <h4 style="font-size: 1.1rem; color: #2e7d32;">Receita Total Ativa</h4>
+                            <div class="value" id="totalRevenueValue" style="font-size: 2.5rem; color: #1b5e20;">R$ 0,00</div>
+                            <p style="color: #666; margin-top: 1rem;">Soma dos valores de todos os planos ativos no sistema.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção do Usuário (Pacientes) -->
+                <div id="userReportsSection">
+                    <h3 class="section-title" style="margin-top: 3rem;">Relatórios de Pacientes</h3>
+                    
+                    <!-- Cards de Resumo Pacientes -->
+                    <div class="summary-cards">
+                        <div class="summary-card">
+                            <h4>Total de Pacientes</h4>
+                            <div class="value" id="totalPatients">0</div>
+                        </div>
+                        <div class="summary-card" style="border-left-color: #2e7d32;">
+                            <h4>Novos (Este Mês)</h4>
+                            <div class="value" id="newPatientsMonth">0</div>
+                        </div>
+                        <div class="summary-card" style="border-left-color: #8e24aa;">
+                            <h4>Idade Média</h4>
+                            <div class="value" id="avgAge">0 anos</div>
+                        </div>
+                    </div>
+
+                    <div class="filters-bar">
+                        <div class="form-group">
+                            <label for="startDate">Data Início</label>
+                            <input type="date" id="startDate" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">Data Fim</label>
+                            <input type="date" id="endDate" class="form-control">
+                        </div>
+                        <button class="btn-primary" onclick="renderPatientReports()"><i class="fas fa-filter"></i> Filtrar</button>
+                        <button class="btn-primary btn-danger" onclick="exportPatientsPDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                    </div>
+
+                    <div class="report-grid">
+                        <div class="chart-container" style="grid-column: 1 / -1;">
+                            <h4 style="margin-bottom: 1rem; color: #1a237e;">Evolução de Cadastros</h4>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="patientsChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h4 style="margin-bottom: 1rem; color: #1a237e;">Distribuição por Sexo</h4>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="genderChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h4 style="margin-bottom: 1rem; color: #1a237e;">Faixa Etária</h4>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="ageChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <footer class="footer">
+        <p>Den Sistema de Gestão Odontológica © 2026 | Versão 2.5.1</p>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar Autenticação Firebase e Carregar Dados
+            auth.onAuthStateChanged((user) => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                } else {
+                    // Carregar Pacientes do Firestore
+                    db.collection('pacientes').where('ownerId', '==', user.uid).get().then(snapshot => {
+                        const patients = [];
+                        snapshot.forEach(doc => patients.push(doc.data()));
+                        window.firestorePatients = patients; // Armazena globalmente
+                        renderPatientReports(); // Renderiza com dados reais
+                    });
+                }
+            });
+
+            const userRole = localStorage.getItem('userRole') || 'admin';
+            const userName = localStorage.getItem('userName') || 'Mateus';
+            const userTitle = localStorage.getItem('userTitle') || 'Administrador';
+
+            document.querySelector('.user-name').textContent = userName;
+            document.querySelector('.user-role').textContent = userTitle;
+            document.querySelector('.user-avatar').textContent = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+            if (userRole === 'user') {
+                const savedRestricted = localStorage.getItem('restrictedMenus');
+                const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    if (restrictedMenus.includes(link.textContent.trim())) {
+                        link.parentElement.style.display = 'none';
+                    }
+                });
+                if (restrictedMenus.includes('Relatórios')) {
+                    alert('Acesso negado: Você não tem permissão para acessar este módulo.');
+                    window.location.href = 'dashboard.html';
+                }
+                
+                // REGRA DE VISUALIZAÇÃO:
+                // Se for usuário comum (Dentista/Recepcionista), esconde relatórios de sistema e mostra apenas pacientes.
+                document.getElementById('adminReportsSection').style.display = 'none';
+                document.querySelector('#userReportsSection .section-title').style.marginTop = '0'; // Ajusta espaçamento
+            }
+
+            let patientsChartInstance = null;
+            let genderChartInstance = null;
+            let ageChartInstance = null;
+
+            // Renderização dos Gráficos
+            function renderUserReports() {
+                // Dados simulados caso não existam no localStorage
+                const defaultUsers = [
+                    { role: 'Administrador', plan: 'Anual', status: 'active' },
+                    { role: 'Dentista', plan: 'Mensal', status: 'active' },
+                    { role: 'Dentista', plan: 'Trimestral', status: 'active' },
+                    { role: 'Recepcionista', plan: 'Mensal', status: 'active' },
+                    { role: 'Dentista', plan: 'Mensal', status: 'inactive' }
+                ];
+                
+                const users = JSON.parse(localStorage.getItem('systemUsers')) || defaultUsers;
+                
+                // Cálculos
+                const total = users.length;
+                const active = users.filter(u => u.status === 'active').length;
+                const paid = users.filter(u => u.plan && u.plan !== 'Gratuito' && u.plan !== 'Vinculado').length;
+                
+                document.getElementById('totalUsers').textContent = total;
+                document.getElementById('activeUsers').textContent = active;
+                document.getElementById('paidPlans').textContent = paid;
+
+                // Dados para Gráficos
+                const roles = {};
+                const plans = {};
+
+                users.forEach(u => {
+                    roles[u.role] = (roles[u.role] || 0) + 1;
+                    const p = u.plan || 'Sem Plano';
+                    plans[p] = (plans[p] || 0) + 1;
+                });
+
+                // Gráfico de Funções
+                new Chart(document.getElementById('rolesChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(roles),
+                        datasets: [{
+                            data: Object.values(roles),
+                            backgroundColor: ['#1a73e8', '#43a047', '#fb8c00', '#8e24aa', '#e53935'],
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+
+                // Gráfico de Planos
+                new Chart(document.getElementById('plansChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(plans),
+                        datasets: [{
+                            label: 'Usuários',
+                            data: Object.values(plans),
+                            backgroundColor: '#1a73e8',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
+
+                // --- Relatório Financeiro (Admin) ---
+                const planPrices = {
+                    'Mensal': 199.00,
+                    'Trimestral': 567.00,
+                    'Anual': 1990.00
+                };
+                
+                const revenueData = { 'Mensal': 0, 'Trimestral': 0, 'Anual': 0 };
+                let totalRevenue = 0;
+
+                users.forEach(u => {
+                    if (u.status === 'active' && planPrices[u.plan]) {
+                        revenueData[u.plan] += planPrices[u.plan];
+                        totalRevenue += planPrices[u.plan];
+                    }
+                });
+
+                document.getElementById('totalRevenueValue').textContent = totalRevenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+                new Chart(document.getElementById('financialChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(revenueData),
+                        datasets: [{
+                            label: 'Receita (R$)',
+                            data: Object.values(revenueData),
+                            backgroundColor: ['#42a5f5', '#66bb6a', '#ffa726'],
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+
+            window.renderPatientReports = function() {
+                const patients = window.firestorePatients || [];
+                const startDateInput = document.getElementById('startDate').value;
+                const endDateInput = document.getElementById('endDate').value;
+
+                // Define datas padrão se não informadas (últimos 6 meses até hoje)
+                const end = endDateInput ? new Date(endDateInput) : new Date();
+                end.setHours(23, 59, 59, 999);
+                
+                let start;
+                if (startDateInput) {
+                    start = new Date(startDateInput);
+                } else {
+                    start = new Date();
+                    start.setMonth(start.getMonth() - 6);
+                }
+
+                // --- Processamento de Dados ---
+                const monthlyData = {};
+                const genderData = { 'Masculino': 0, 'Feminino': 0, 'Outro': 0 };
+                const ageData = { '0-12': 0, '13-18': 0, '19-30': 0, '31-50': 0, '50+': 0 };
+                let totalAge = 0;
+                let countAge = 0;
+                let newThisMonth = 0;
+                const currentMonthKey = new Date().toLocaleString('pt-BR', { month: 'short', year: 'numeric' });
+                
+                // Inicializar meses no intervalo para o gráfico não ficar com buracos
+                let current = new Date(start);
+                current.setDate(1); // Normaliza para o dia 1 para iteração mensal
+                while (current <= end) {
+                    const key = current.toLocaleString('pt-BR', { month: 'short', year: 'numeric' });
+                    monthlyData[key] = 0;
+                    current.setMonth(current.getMonth() + 1);
+                }
+
+                patients.forEach(p => {
+                    // Usa dataCadastro se existir, senão usa o ID (timestamp) como fallback
+                    const pDate = p.dataCadastro ? new Date(p.dataCadastro) : new Date(p.id);
+                    
+                    // Filtro de Data para o Gráfico de Evolução
+                    if (pDate >= start && pDate <= end) {
+                        const key = pDate.toLocaleString('pt-BR', { month: 'short', year: 'numeric' });
+                        if (monthlyData.hasOwnProperty(key)) {
+                            monthlyData[key]++;
+                        }
+                    }
+
+                    // Dados Demográficos (Base Total)
+                    // Sexo
+                    if (p.sexo === 'M') genderData['Masculino']++;
+                    else if (p.sexo === 'F') genderData['Feminino']++;
+                    else genderData['Outro']++;
+
+                    // Idade
+                    if (p.nascimento) {
+                        const birthDate = new Date(p.nascimento);
+                        const ageDifMs = Date.now() - birthDate.getTime();
+                        const ageDate = new Date(ageDifMs);
+                        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+                        
+                        totalAge += age;
+                        countAge++;
+
+                        if (age <= 12) ageData['0-12']++;
+                        else if (age <= 18) ageData['13-18']++;
+                        else if (age <= 30) ageData['19-30']++;
+                        else if (age <= 50) ageData['31-50']++;
+                        else ageData['50+']++;
+                    }
+
+                    // Novos este mês (KPI)
+                    const pKey = pDate.toLocaleString('pt-BR', { month: 'short', year: 'numeric' });
+                    if (pKey === currentMonthKey) newThisMonth++;
+                });
+
+                // --- Atualizar Cards ---
+                document.getElementById('totalPatients').textContent = patients.length;
+                document.getElementById('newPatientsMonth').textContent = newThisMonth;
+                document.getElementById('avgAge').textContent = countAge > 0 ? Math.floor(totalAge / countAge) + ' anos' : '-';
+
+                // --- Renderizar Gráficos ---
+                
+                // 1. Evolução
+                const ctx = document.getElementById('patientsChart').getContext('2d');
+                if (patientsChartInstance) {
+                    patientsChartInstance.destroy();
+                }
+                patientsChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(monthlyData),
+                        datasets: [{
+                            label: 'Cadastros no Período',
+                            data: Object.values(monthlyData),
+                            borderColor: '#1a73e8',
+                            backgroundColor: 'rgba(26, 115, 232, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
+
+                // 2. Sexo
+                const ctxGender = document.getElementById('genderChart').getContext('2d');
+                if (genderChartInstance) genderChartInstance.destroy();
+                genderChartInstance = new Chart(ctxGender, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(genderData),
+                        datasets: [{
+                            data: Object.values(genderData),
+                            backgroundColor: ['#1976d2', '#e91e63', '#9e9e9e']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+
+                // 3. Faixa Etária
+                const ctxAge = document.getElementById('ageChart').getContext('2d');
+                if (ageChartInstance) ageChartInstance.destroy();
+                ageChartInstance = new Chart(ctxAge, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(ageData),
+                        datasets: [{
+                            label: 'Pacientes',
+                            data: Object.values(ageData),
+                            backgroundColor: '#8e24aa',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
+            };
+
+            window.exportPatientsPDF = function() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                const patients = window.firestorePatients || [];
+                const startDateInput = document.getElementById('startDate').value;
+                const endDateInput = document.getElementById('endDate').value;
+
+                const end = endDateInput ? new Date(endDateInput) : new Date();
+                end.setHours(23, 59, 59, 999);
+                
+                let start;
+                if (startDateInput) {
+                    start = new Date(startDateInput);
+                } else {
+                    start = new Date();
+                    start.setMonth(start.getMonth() - 6);
+                }
+
+                const filteredPatients = patients.filter(p => {
+                    const pDate = p.dataCadastro ? new Date(p.dataCadastro) : new Date(p.id);
+                    return pDate >= start && pDate <= end;
+                });
+
+                if (filteredPatients.length === 0) {
+                    alert('Nenhum paciente encontrado no período selecionado.');
+                    return;
+                }
+
+                // Cabeçalho do PDF
+                doc.setFontSize(18);
+                doc.setTextColor(26, 35, 126); // #1a237e
+                doc.text("Relatório de Pacientes", 14, 22);
+                
+                doc.setFontSize(11);
+                doc.setTextColor(100);
+                const dateStr = `Período: ${start.toLocaleDateString('pt-BR')} até ${end.toLocaleDateString('pt-BR')}`;
+                doc.text(dateStr, 14, 30);
+
+                // Dados da Tabela
+                const tableColumn = ["Nome", "Email", "Celular", "Data Cadastro"];
+                const tableRows = filteredPatients.map(p => {
+                    const pDate = p.dataCadastro ? new Date(p.dataCadastro) : new Date(p.id);
+                    return [
+                        p.nome || '',
+                        p.email || '',
+                        p.celular || '',
+                        pDate.toLocaleDateString('pt-BR')
+                    ];
+                });
+
+                doc.autoTable({
+                    head: [tableColumn],
+                    body: tableRows,
+                    startY: 40,
+                    theme: 'grid',
+                    headStyles: { fillColor: [26, 115, 232] },
+                    styles: { fontSize: 9 }
+                });
+
+                doc.save('relatorio_pacientes.pdf');
+            };
+
+            renderUserReports();
+        });
+    </script>
+</body>
+</html>

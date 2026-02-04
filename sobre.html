@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre Nós | Den</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f4f8; color: #333; overflow-x: hidden; }
+        
+        /* Navbar */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo-container { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-symbol { font-size: 2rem; background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.5)); }
+        .logo-text { font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; color: #1a237e; }
+        
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a { text-decoration: none; color: #5f6368; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: #1a73e8; }
+        
+        .nav-buttons { display: flex; gap: 1rem; }
+        .btn { padding: 0.6rem 1.5rem; border-radius: 50px; font-weight: 600; text-decoration: none; transition: all 0.3s; }
+        .btn-outline { border: 2px solid #1a73e8; color: #1a73e8; }
+        .btn-outline:hover { background: #f0f8ff; }
+        .btn-primary { background: linear-gradient(90deg, #1a73e8 0%, #00e5ff 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26, 115, 232, 0.4); }
+
+        /* About Page Specific Styles */
+        .about-header { text-align: center; padding: 5rem 5% 3rem; background: linear-gradient(135deg, #f0f4f8 0%, #e3f2fd 100%); }
+        .about-header h1 { font-size: 3.5rem; color: #1a237e; margin-bottom: 1.5rem; font-weight: 800; }
+        .about-header p { font-size: 1.3rem; color: #5f6368; max-width: 800px; margin: 0 auto; line-height: 1.6; }
+
+        .content-section { padding: 4rem 5%; background: white; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .story-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+        .story-content h2 { font-size: 2.5rem; color: #1a237e; margin-bottom: 1.5rem; }
+        .story-content p { font-size: 1.1rem; color: #5f6368; line-height: 1.8; margin-bottom: 1.5rem; }
+        .story-image { text-align: center; }
+        .story-image i { font-size: 15rem; background: linear-gradient(135deg, #1a73e8 0%, #00e5ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; opacity: 0.8; filter: drop-shadow(0 10px 30px rgba(0, 229, 255, 0.2)); }
+
+        .mission-section { background-color: #f8f9fa; padding: 5rem 5%; text-align: center; }
+        .mission-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem; }
+        .mission-card { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: transform 0.3s; border: 1px solid #f0f0f0; }
+        .mission-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
+        .mission-icon { font-size: 3rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, #1a73e8 0%, #00e5ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .mission-card h3 { font-size: 1.5rem; color: #333; margin-bottom: 1rem; }
+        .mission-card p { color: #666; line-height: 1.6; }
+
+        /* Footer */
+        .footer { background: #1a237e; color: white; padding: 3rem 5%; text-align: center; }
+        .footer p { opacity: 0.7; margin-top: 1rem; }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .story-grid { grid-template-columns: 1fr; }
+            .about-header h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="index.html" class="logo-container">
+            <div class="logo-symbol"><i class="fas fa-tooth"></i></div>
+            <div class="logo-text">DEN</div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html#funcionalidades">Funcionalidades</a></li>
+            <li><a href="planos.html">Planos</a></li>
+            <li><a href="sobre.html" style="color: #1a73e8; font-weight: 700;">Sobre</a></li>
+            <li><a href="contato.html">Contato</a></li>
+        </ul>
+        <div class="nav-buttons">
+            <a href="login.html" class="btn btn-outline">Entrar</a>
+            <a href="cadastro_usuario.html" class="btn btn-primary">Cadastre-se</a>
+        </div>
+    </nav>
+
+    <header class="about-header">
+        <h1>Transformando Sorrisos</h1>
+        <p>A Den nasceu com um propósito claro: simplificar a gestão odontológica para que dentistas possam focar no que realmente importa - seus pacientes.</p>
+    </header>
+
+    <section class="content-section">
+        <div class="container">
+            <div class="story-grid">
+                <div class="story-content">
+                    <h2>Nossa História</h2>
+                    <p>Fundada em 2026, a Den surgiu da observação de que muitos dentistas perdiam horas preciosas com burocracia, planilhas complexas e sistemas ultrapassados. Acreditamos que a tecnologia deve ser uma aliada, não um obstáculo.</p>
+                    <p>Desenvolvemos uma plataforma intuitiva, segura e completa, desenhada especificamente para as necessidades de consultórios e clínicas odontológicas modernas. Hoje, ajudamos milhares de profissionais a organizarem suas finanças e agendas com eficiência.</p>
+                </div>
+                <div class="story-image">
+                    <i class="fas fa-rocket"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mission-section">
+        <div class="container">
+            <h2 style="font-size: 2.5rem; color: #1a237e; margin-bottom: 1rem;">Nossos Pilares</h2>
+            <div class="mission-grid">
+                <div class="mission-card">
+                    <i class="fas fa-bullseye mission-icon"></i>
+                    <h3>Missão</h3>
+                    <p>Empoderar dentistas com ferramentas de gestão inteligentes, proporcionando liberdade para crescer e excelência no atendimento.</p>
+                </div>
+                <div class="mission-card">
+                    <i class="fas fa-eye mission-icon"></i>
+                    <h3>Visão</h3>
+                    <p>Ser a plataforma de referência global em gestão odontológica, reconhecida pela inovação e simplicidade.</p>
+                </div>
+                <div class="mission-card">
+                    <i class="fas fa-heart mission-icon"></i>
+                    <h3>Valores</h3>
+                    <p>Transparência, segurança de dados, foco no cliente e inovação contínua são o que nos move todos os dias.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="logo-symbol" style="font-size: 2rem; margin-bottom: 1rem;"><i class="fas fa-tooth"></i></div>
+        <h3>DEN FINANCEIRO</h3>
+        <p>© 2026 Den Sistema de Gestão Odontológica. Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>

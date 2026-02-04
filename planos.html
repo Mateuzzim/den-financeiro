@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planos e Preços | Den</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f4f8; color: #333; overflow-x: hidden; }
+        
+        /* Navbar */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo-container { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-symbol { font-size: 2rem; background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.5)); }
+        .logo-text { font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; color: #1a237e; }
+        
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a { text-decoration: none; color: #5f6368; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: #1a73e8; }
+        
+        .nav-buttons { display: flex; gap: 1rem; }
+        .btn { padding: 0.6rem 1.5rem; border-radius: 50px; font-weight: 600; text-decoration: none; transition: all 0.3s; }
+        .btn-outline { border: 2px solid #1a73e8; color: #1a73e8; }
+        .btn-outline:hover { background: #f0f8ff; }
+        .btn-primary { background: linear-gradient(90deg, #1a73e8 0%, #00e5ff 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26, 115, 232, 0.4); }
+
+        /* Pricing Styles */
+        .pricing-header { text-align: center; padding: 4rem 5% 2rem; }
+        .pricing-header h1 { font-size: 3rem; color: #1a237e; margin-bottom: 1rem; font-weight: 800; }
+        .pricing-header p { font-size: 1.2rem; color: #5f6368; max-width: 600px; margin: 0 auto; }
+
+        .pricing-container { padding: 2rem 5% 5rem; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; }
+        .pricing-card { background: white; border-radius: 20px; padding: 2.5rem; width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: transform 0.3s; border: 1px solid #f0f0f0; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .pricing-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
+        .pricing-card.featured { border: 2px solid #1a73e8; transform: scale(1.05); z-index: 1; }
+        .pricing-card.featured:hover { transform: scale(1.05) translateY(-10px); }
+        
+        .badge { position: absolute; top: 20px; right: -30px; background: #1a73e8; color: white; padding: 5px 40px; transform: rotate(45deg); font-size: 0.8rem; font-weight: 700; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+        .plan-name { font-size: 1.5rem; color: #333; font-weight: 700; margin-bottom: 0.5rem; }
+        .plan-price { font-size: 3rem; color: #1a237e; font-weight: 800; margin-bottom: 1.5rem; }
+        .plan-price span { font-size: 1rem; color: #5f6368; font-weight: 400; }
+        
+        .features-list { list-style: none; margin-bottom: 2rem; flex: 1; }
+        .features-list li { margin-bottom: 1rem; color: #5f6368; display: flex; align-items: center; gap: 10px; }
+        .features-list li i { color: #00c853; }
+        .features-list li.disabled { color: #ccc; }
+        .features-list li.disabled i { color: #ccc; }
+
+        /* Footer */
+        .footer { background: #1a237e; color: white; padding: 3rem 5%; text-align: center; }
+        .footer p { opacity: 0.7; margin-top: 1rem; }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .pricing-card.featured { transform: scale(1); }
+            .pricing-card.featured:hover { transform: translateY(-10px); }
+        }
+
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; position: relative; }
+        .close-modal { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #5f6368; }
+        .payment-options { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+        .payment-btn { padding: 1.5rem; border: 2px solid #eee; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: white; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .payment-btn:hover { border-color: #1a73e8; background: #f0f8ff; }
+        .payment-btn i { font-size: 2rem; color: #1a73e8; }
+        .payment-btn span { font-weight: 600; color: #333; }
+        .pix-code { background: #f5f5f5; padding: 1rem; border-radius: 6px; margin-top: 1rem; font-family: monospace; word-break: break-all; font-size: 0.85rem; color: #555; }
+        .qr-placeholder { background: #eee; width: 150px; height: 150px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="index.html" class="logo-container">
+            <div class="logo-symbol"><i class="fas fa-tooth"></i></div>
+            <div class="logo-text">DEN</div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html#funcionalidades">Funcionalidades</a></li>
+            <li><a href="planos.html" style="color: #1a73e8; font-weight: 700;">Planos</a></li>
+            <li><a href="sobre.html">Sobre</a></li>
+            <li><a href="contato.html">Contato</a></li>
+        </ul>
+        <div class="nav-buttons">
+            <a href="login.html" class="btn btn-outline">Entrar</a>
+            <a href="cadastro_usuario.html" class="btn btn-primary">Cadastre-se</a>
+        </div>
+    </nav>
+
+    <div class="pricing-header">
+        <h1>Planos Flexíveis</h1>
+        <p>Escolha a melhor opção para o tamanho da sua clínica. Sem contratos de longo prazo, cancele quando quiser.</p>
+    </div>
+
+    <div class="pricing-container">
+        <!-- Basic Plan -->
+        <div class="pricing-card featured">
+            <h3 class="plan-name">Básico</h3>
+            <div class="plan-price">R$ 39,99<span>/mês</span></div>
+            <ul class="features-list">
+                <li><i class="fas fa-check"></i> 1 Dentista</li>
+                <li><i class="fas fa-check"></i> Agenda Online</li>
+                <li><i class="fas fa-check"></i> Cadastro de Pacientes</li>
+                <li><i class="fas fa-check"></i> Prontuário Digital</li>
+                <li><i class="fas fa-check"></i> Controle Financeiro</li>
+                <li><i class="fas fa-check"></i> Relatórios Avançados</li>
+            </ul>
+            <button onclick="abrirModalPagamento()" class="btn btn-primary" style="text-align: center; width: 100%; display: block; font-size: 1.1rem;">Assinar Agora</button>
+        </div>
+    </div>
+
+    <!-- Modal de Pagamento -->
+    <div id="modalPagamento" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="fecharModalPagamento()">&times;</button>
+            <h3 style="color: #1a237e; margin-bottom: 0.5rem;">Assinar Plano Básico</h3>
+            <p style="color: #666; margin-bottom: 1.5rem;">Valor: <strong>R$ 39,99/mês</strong></p>
+            
+            <div class="payment-options">
+                <div class="payment-btn" onclick="mostrarPix()">
+                    <i class="fas fa-qrcode"></i>
+                    <span>PIX</span>
+                </div>
+                <div class="payment-btn" onclick="pagarCartao()">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Cartão</span>
+                </div>
+            </div>
+
+            <div id="areaPix" style="display: none; margin-top: 1.5rem; text-align: center; border-top: 1px solid #eee; padding-top: 1.5rem;">
+                <p style="font-size: 0.9rem; color: #333; margin-bottom: 1rem;">Escaneie o QR Code abaixo:</p>
+                <div class="qr-placeholder">
+                    <i class="fas fa-qrcode" style="font-size: 4rem;"></i>
+                </div>
+                <div class="pix-code">00020126360014BR.GOV.BCB.PIX0114+55119999988885204000053039865802BR5913DEN FINANCEIRO6009SAO PAULO62070503***63041234</div>
+                <button class="btn btn-primary" style="margin-top: 1rem; width: 100%;" onclick="confirmarPagamento()">Já fiz o pagamento</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="logo-symbol" style="font-size: 2rem; margin-bottom: 1rem;"><i class="fas fa-tooth"></i></div>
+        <h3>DEN FINANCEIRO</h3>
+        <p>© 2026 Den Sistema de Gestão Odontológica. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        function abrirModalPagamento() {
+            document.getElementById('modalPagamento').style.display = 'flex';
+        }
+
+        function fecharModalPagamento() {
+            document.getElementById('modalPagamento').style.display = 'none';
+            document.getElementById('areaPix').style.display = 'none';
+        }
+
+        function mostrarPix() {
+            document.getElementById('areaPix').style.display = 'block';
+        }
+
+        function pagarCartao() {
+            // Simulação de integração com gateway de pagamento
+            const btn = event.currentTarget;
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+            
+            setTimeout(() => {
+                alert('Redirecionando para o checkout seguro do cartão...');
+                window.location.href = 'cadastro_usuario.html?plano=basico&pagamento=cartao';
+            }, 1000);
+        }
+
+        function confirmarPagamento() {
+            alert('Pagamento via PIX confirmado! Redirecionando para criar sua conta...');
+            window.location.href = 'cadastro_usuario.html?plano=basico&pagamento=pix';
+        }
+
+        // Fechar ao clicar fora
+        document.getElementById('modalPagamento').addEventListener('click', function(e) {
+            if (e.target === this) fecharModalPagamento();
+        });
+    </script>
+</body>
+</html>

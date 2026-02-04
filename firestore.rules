@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    match /users/{userId} {
+      // Qualquer um logado pode ler perfis
+      allow read: if request.auth != null;
+      // O usuário pode criar o seu perfil, mas não pode mudar o 'role' depois de criado
+      allow create: if request.auth != null && request.auth.uid == userId;
+      // Permite atualização se for o próprio usuário (sem mudar cargo) OU se for Administrador
+      allow update: if request.auth != null && (
+        (request.auth.uid == userId && request.resource.data.role == resource.data.role) ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Administrador'
+      );
+      // Apenas Administrador pode excluir usuários
+      allow delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Administrador';
+    }
+
+    // Regras para Pacientes
+    // Garante que o usuário só veja dados que tenham o campo 'ownerId' igual ao seu UID
+    match /pacientes/{pacienteId} {
+      allow read, update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
+    }
+
+    // Regras para Agendamentos
+    match /appointments/{appointmentId} {
+      allow read, update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
+    }
+  }
+}
