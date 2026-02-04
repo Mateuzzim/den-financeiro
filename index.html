@@ -30,6 +30,7 @@
         .logo-symbol { font-size: 2rem; background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.5)); }
         .logo-text { font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; color: #1a237e; }
         
+        .mobile-menu-toggle { display: none; font-size: 1.5rem; background: none; border: none; cursor: pointer; color: #1a237e; }
         .nav-links { display: flex; gap: 2rem; list-style: none; }
         .nav-links a { text-decoration: none; color: #5f6368; font-weight: 500; transition: color 0.2s; }
         .nav-links a:hover { color: #1a73e8; }
@@ -94,7 +95,21 @@
             .hero-image { width: 100%; margin-top: 2rem; }
             .hero-image i { font-size: 18rem; }
             .nav-links { display: none; }
+            .nav-links.active { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; background: white; width: 100%; padding: 1rem 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); animation: slideDown 0.3s ease-out; }
+            .nav-links.active li { text-align: center; padding: 0.5rem 0; }
             .features { padding: 3rem 5%; }
+            .mobile-menu-toggle { display: block; }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -105,6 +120,7 @@
             <div class="logo-symbol"><i class="fas fa-tooth"></i></div>
             <div class="logo-text">DEN</div>
         </a>
+        <button class="mobile-menu-toggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
         <ul class="nav-links">
             <li><a href="#funcionalidades">Funcionalidades</a></li>
             <li><a href="planos.html">Planos</a></li>
@@ -162,5 +178,12 @@
         <h3>DEN FINANCEIRO</h3>
         <p>© 2026 Den Sistema de Gestão Odontológica. Todos os direitos reservados.</p>
     </footer>
+
+    <script>
+        function toggleMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>

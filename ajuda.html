@@ -38,6 +38,18 @@
         .section-title { font-size: 1.3rem; color: #1a237e; margin-bottom: 1.5rem; font-weight: 600; }
         .footer { text-align: center; padding: 1.5rem; color: #5f6368; font-size: 0.9rem; border-top: 1px solid #eee; margin-top: 2rem; }
         @media (max-width: 768px) { .main-container { flex-direction: column; } .sidebar { width: 100%; padding: 1.5rem; } .page-header { flex-direction: column; align-items: flex-start; } }
+        
+        /* FAQ Styles */
+        .faq-container { display: flex; flex-direction: column; gap: 1rem; }
+        .faq-item { border: 1px solid #dfe1e5; border-radius: 8px; overflow: hidden; background: white; transition: box-shadow 0.2s; }
+        .faq-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .faq-question { padding: 1.2rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: #333; background: #fff; }
+        .faq-question:hover { background-color: #f8f9fa; }
+        .faq-answer { padding: 0 1.2rem; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease; background-color: #fafafa; color: #5f6368; line-height: 1.6; }
+        .faq-item.active .faq-answer { padding: 1.2rem; max-height: 500px; border-top: 1px solid #eee; }
+        .faq-item.active .faq-question i.fa-chevron-down { transform: rotate(180deg); transition: transform 0.3s; }
+        .faq-answer ul { padding-left: 1.5rem; margin-top: 0.5rem; }
+        .faq-answer li { margin-bottom: 0.5rem; }
     </style>
 </head>
 <body>
@@ -90,7 +102,74 @@
             </div>
             <div class="recent-activity">
                 <h3 class="section-title">Central de Ajuda</h3>
-                <p>Encontre respostas para suas dúvidas aqui.</p>
+                <p style="margin-bottom: 2rem; color: #5f6368;">Bem-vindo à central de aprendizado do Den. Clique nos tópicos abaixo para ver dicas de como utilizar cada função do sistema.</p>
+
+                <div class="faq-container">
+                    <!-- Agendamento -->
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span><i class="fas fa-calendar-check" style="color: #1a73e8; margin-right: 10px;"></i> Como usar o Agendamento?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>O módulo de Agendamento permite gerenciar suas consultas de forma visual.</p>
+                            <ul>
+                                <li><strong>Novo Agendamento:</strong> Clique no botão "Novo Agendamento" ou arraste um paciente da Lista de Espera para o calendário.</li>
+                                <li><strong>Visualização:</strong> Alterne entre visualização Mensal, Semanal ou Diária usando os botões no topo do calendário.</li>
+                                <li><strong>Status:</strong> Clique em um agendamento existente para alterar seu status (Confirmado, Pendente, Concluído) ou editar detalhes.</li>
+                                <li><strong>Lista de Espera:</strong> Adicione pacientes que aguardam vaga na lateral direita. Quando surgir um horário, arraste-os para o calendário.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Pacientes -->
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span><i class="fas fa-user-injured" style="color: #43a047; margin-right: 10px;"></i> Gerenciando Pacientes</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Mantenha o cadastro dos seus pacientes completo e atualizado.</p>
+                            <ul>
+                                <li><strong>Cadastro:</strong> Acesse a página "Pacientes" e preencha o formulário com dados pessoais, convênio e observações.</li>
+                                <li><strong>Histórico:</strong> Ao clicar no ícone de "olho" na lista de pacientes, você visualiza o histórico completo de atendimentos realizados.</li>
+                                <li><strong>Busca:</strong> Utilize a barra de pesquisa ou os filtros avançados para encontrar pacientes por nome, CPF ou convênio.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Financeiro -->
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span><i class="fas fa-chart-line" style="color: #fb8c00; margin-right: 10px;"></i> Controle Financeiro</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Acompanhe a saúde financeira da sua clínica.</p>
+                            <ul>
+                                <li><strong>Dashboard:</strong> Tenha uma visão rápida do faturamento mensal e contas a receber logo na tela inicial.</li>
+                                <li><strong>Faturas:</strong> Emita faturas para procedimentos realizados através do menu "Faturas".</li>
+                                <li><strong>Relatórios:</strong> Acesse gráficos detalhados sobre receitas e desempenho financeiro na página de Relatórios.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Usuários e Configurações -->
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span><i class="fas fa-cogs" style="color: #8e24aa; margin-right: 10px;"></i> Configurações e Usuários</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Administre o acesso e personalize o sistema.</p>
+                            <ul>
+                                <li><strong>Permissões:</strong> O administrador pode definir o que cada perfil (Dentista, Recepcionista) pode acessar no menu "Configurações".</li>
+                                <li><strong>Novos Usuários:</strong> Cadastre membros da equipe na página "Usuários". O primeiro usuário cadastrado é sempre o Administrador.</li>
+                                <li><strong>Backup:</strong> Realize backups periódicos dos seus dados na aba de Configurações para garantir segurança.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -99,6 +178,11 @@
     </footer>
 
     <script>
+        function toggleFaq(element) {
+            const item = element.parentElement;
+            item.classList.toggle('active');
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const userRole = localStorage.getItem('userRole') || 'admin';
             const userName = localStorage.getItem('userName') || 'Mateus';
