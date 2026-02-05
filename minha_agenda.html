@@ -49,7 +49,7 @@
         .date-nav { display: flex; align-items: center; gap: 15px; }
         .date-display { font-size: 1.2rem; font-weight: 700; color: #1a237e; min-width: 200px; text-align: center; }
         
-        .appointment-card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 6px solid #1a73e8; display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s; flex-wrap: wrap; gap: 1rem; }
+        .appointment-card { background: white; border-radius: 12px; padding: 0.6rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 6px solid #1a73e8; display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s; flex-wrap: wrap; gap: 0.4rem; }
         .appointment-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         
         .appointment-card.completed { border-left-color: #4caf50; background-color: #f9fff9; }
@@ -57,15 +57,15 @@
         .appointment-card.confirmed { border-left-color: #2196f3; }
         .appointment-card.missed { border-left-color: #d32f2f; background-color: #fff5f5; opacity: 0.8; }
         
-        .time-slot { font-size: 1.8rem; font-weight: 700; color: #333; min-width: 100px; text-align: center; line-height: 1; }
-        .time-slot span { font-size: 0.8rem; color: #666; font-weight: 400; display: block; margin-top: 5px; }
+        .time-slot { font-size: 1.1rem; font-weight: 700; color: #333; min-width: 70px; text-align: center; line-height: 1; }
+        .time-slot span { font-size: 0.75rem; color: #666; font-weight: 400; display: block; margin-top: 2px; }
         
-        .patient-info { flex: 1; padding: 0 1.5rem; min-width: 200px; }
-        .patient-info h3 { margin: 0 0 5px 0; color: #1a237e; font-size: 1.2rem; }
-        .patient-info p { margin: 0; color: #5f6368; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
+        .patient-info { flex: 1; padding: 0 0.5rem; min-width: 120px; }
+        .patient-info h3 { margin: 0 0 2px 0; color: #1a237e; font-size: 0.9rem; }
+        .patient-info p { margin: 0; color: #5f6368; font-size: 0.8rem; display: flex; align-items: center; gap: 3px; }
         
-        .actions { display: flex; gap: 10px; }
-        .btn-icon { width: 45px; height: 45px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: background 0.2s; }
+        .actions { display: flex; gap: 4px; }
+        .btn-icon { width: 26px; height: 26px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; transition: background 0.2s; }
         .btn-check { background: #e8f5e9; color: #2e7d32; }
         .btn-check:hover { background: #c8e6c9; }
         .btn-whatsapp { background: #e0f2f1; color: #00695c; }
@@ -96,62 +96,124 @@
             .date-nav { width: 100%; justify-content: space-between; }
         }
 
-        /* Layout de Grade (6 por linha) */
+        /* Layout de Lista (Linha Única) */
         #appointmentsList {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
         }
         
         #appointmentsList .empty-state {
-            grid-column: 1 / -1;
+            padding: 3rem;
         }
 
         #appointmentsList .appointment-card {
-            flex-direction: column;
-            align-items: flex-start;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 0;
-            height: 100%;
-            min-width: 0;
+            height: auto;
+            padding: 0.8rem 1.5rem;
+            flex-wrap: nowrap;
         }
         
         #appointmentsList .appointment-card .time-slot {
-            width: 100%;
+            width: auto;
+            min-width: 140px;
             display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            border-bottom: 1px solid #f0f0f0;
-            padding-bottom: 0.5rem;
-            margin-bottom: 0.5rem;
-            font-size: 1.4rem;
+            align-items: center;
+            gap: 10px;
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+            font-size: 1.1rem;
+        }
+
+        #appointmentsList .appointment-card .time-slot span {
+            margin-top: 0;
+            font-size: 0.8rem;
+            background: #f1f3f4;
+            padding: 2px 8px;
+            border-radius: 12px;
+            color: #5f6368;
+            font-weight: 600;
         }
         
         #appointmentsList .appointment-card .patient-info {
-            padding: 0;
-            width: 100%;
+            padding: 0 1.5rem;
+            width: auto;
             flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #appointmentsList .appointment-card .patient-info h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            white-space: nowrap;
+            min-width: 150px;
+        }
+
+        #appointmentsList .appointment-card .patient-info p {
+            margin: 0;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #5f6368;
         }
         
         #appointmentsList .appointment-card .actions {
-            width: 100%;
+            width: auto;
             justify-content: flex-end;
-            margin-top: 1rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid #f0f0f0;
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+            gap: 8px;
         }
         
-        /* Responsividade para telas menores */
-        @media (max-width: 1600px) {
-            #appointmentsList { grid-template-columns: repeat(4, 1fr); }
-        }
-        @media (max-width: 1200px) {
-            #appointmentsList { grid-template-columns: repeat(3, 1fr); }
-        }
-        @media (max-width: 900px) {
-            #appointmentsList { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 600px) {
-            #appointmentsList { grid-template-columns: 1fr; }
+        /* Responsividade para telas menores (Mobile mantém card empilhado para legibilidade) */
+        @media (max-width: 768px) {
+            #appointmentsList .appointment-card {
+                flex-direction: row;
+                align-items: center;
+                padding: 0.6rem;
+                gap: 8px;
+            }
+            #appointmentsList .appointment-card .time-slot {
+                width: auto;
+                min-width: auto;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+                margin: 0;
+                border: none;
+                padding: 0;
+                font-size: 0.9rem;
+            }
+            #appointmentsList .appointment-card .patient-info {
+                flex: 1;
+                padding: 0;
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0;
+                min-width: 0;
+            }
+            #appointmentsList .appointment-card .patient-info h3 {
+                font-size: 0.9rem;
+                min-width: 0;
+            }
+            #appointmentsList .appointment-card .patient-info p {
+                font-size: 0.75rem;
+            }
+            #appointmentsList .appointment-card .actions {
+                width: auto;
+                border: none;
+                padding: 0;
+            }
         }
     </style>
 </head>

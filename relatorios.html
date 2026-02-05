@@ -65,9 +65,9 @@
         
         /* Estilos para Relatórios */
         .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-        .summary-card { background: #fff; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #1a73e8; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .summary-card h4 { font-size: 0.9rem; color: #5f6368; margin-bottom: 0.5rem; }
-        .summary-card .value { font-size: 1.8rem; font-weight: 700; color: #1a237e; }
+        .summary-card { background: #fff; padding: 0.8rem; border-radius: 8px; border-left: 4px solid #1a73e8; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .summary-card h4 { font-size: 0.75rem; color: #5f6368; margin-bottom: 0; }
+        .summary-card .value { font-size: 1rem; font-weight: 700; color: #1a237e; }
         .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
         .chart-container { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #eee; min-height: 300px; }
         
@@ -194,7 +194,7 @@
                     <h3 class="section-title" style="margin-top: 3rem;">Relatórios de Pacientes</h3>
                     
                     <!-- Cards de Resumo Pacientes -->
-                    <div class="summary-cards" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="summary-cards" style="grid-template-columns: repeat(2, 1fr);">
                         <div class="summary-card">
                             <h4>Total de Pacientes</h4>
                             <div class="value" id="totalPatients">0</div>
@@ -202,10 +202,6 @@
                         <div class="summary-card" style="border-left-color: #2e7d32;">
                             <h4>Novos (Este Mês)</h4>
                             <div class="value" id="newPatientsMonth">0</div>
-                        </div>
-                        <div class="summary-card" style="border-left-color: #8e24aa;">
-                            <h4>Idade Média</h4>
-                            <div class="value" id="avgAge">0 anos</div>
                         </div>
                     </div>
 
@@ -455,8 +451,6 @@
                 const monthlyData = {};
                 const genderData = { 'Masculino': 0, 'Feminino': 0, 'Outro': 0 };
                 const ageData = { '0-12': 0, '13-18': 0, '19-30': 0, '31-50': 0, '50+': 0 };
-                let totalAge = 0;
-                let countAge = 0;
                 let newThisMonth = 0;
                 const currentMonthKey = new Date().toLocaleString('pt-BR', { month: 'short', year: 'numeric' });
                 
@@ -494,9 +488,6 @@
                         const ageDate = new Date(ageDifMs);
                         const age = Math.abs(ageDate.getUTCFullYear() - 1970);
                         
-                        totalAge += age;
-                        countAge++;
-
                         if (age <= 12) ageData['0-12']++;
                         else if (age <= 18) ageData['13-18']++;
                         else if (age <= 30) ageData['19-30']++;
@@ -512,7 +503,6 @@
                 // --- Atualizar Cards ---
                 document.getElementById('totalPatients').textContent = patients.length;
                 document.getElementById('newPatientsMonth').textContent = newThisMonth;
-                document.getElementById('avgAge').textContent = countAge > 0 ? Math.floor(totalAge / countAge) + ' anos' : '-';
 
                 // --- Renderizar Gráficos ---
                 
