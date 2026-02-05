@@ -564,7 +564,8 @@
                 <h3 class="nav-title">Menu Principal</h3>
                 <ul class="nav-links">
                     <li><a href="dashboard.html" class="active"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
-                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Agendamento</a></li>
+                    <li><a href="minha_agenda.html"><i class="fas fa-user-clock nav-icon"></i> Minha Agenda</a></li>
+                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Atendimentos</a></li>
                     <li><a href="paciente.html"><i class="fas fa-user-injured nav-icon"></i> Pacientes</a></li>
                     <li><a href="financeiro.html"><i class="fas fa-chart-line nav-icon"></i> Financeiro</a></li>
                     <li><a href="profissonal.html"><i class="fas fa-user-md nav-icon"></i> Profissional</a></li>
@@ -596,7 +597,7 @@
 
             <!-- Ações Rápidas -->
             <div class="quick-actions">
-                <button class="action-btn" onclick="window.location.href='agendamento.html'"><i class="fas fa-calendar-plus" style="color: #1a73e8;"></i> Agendamento</button>
+                <button class="action-btn" onclick="window.location.href='agendamento.html'"><i class="fas fa-calendar-plus" style="color: #1a73e8;"></i> Atendimentos</button>
                 <button class="action-btn" onclick="abrirModalPaciente()"><i class="fas fa-user-plus" style="color: #43a047;"></i> Novo Paciente</button>
                 <button class="action-btn" onclick="window.location.href='relatorios.html'"><i class="fas fa-print" style="color: #8e24aa;"></i> Relatório</button>
             </div>
@@ -684,7 +685,7 @@
             <div class="dashboard-bottom-grid">
                 <!-- Próximas Consultas -->
                 <div class="upcoming-appointments">
-                    <h3 class="section-title">Próximas Consultas</h3>
+                    <h3 class="section-title">Próximos Atendimentos</h3>
                     <div id="appointments-list">
                         <!-- Preenchido via JS -->
                     </div>
@@ -696,7 +697,7 @@
                     <ul class="activity-list">
                         <li style="color: #999; font-style: italic; padding: 1rem 0;">Nenhuma atividade recente.</li>
                     </ul>
-                </div>
+            </div>
             </div>
         </main>
     </div>
@@ -713,29 +714,23 @@
                     <label>Nome Completo *</label>
                     <input type="text" id="pacienteNome" class="form-control" required>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label>CPF</label>
-                        <input type="text" id="pacienteCpf" class="form-control" placeholder="000.000.000-00" maxlength="14">
-                    </div>
-                    <div class="form-group">
-                        <label>Data de Nascimento</label>
-                        <input type="date" id="pacienteNascimento" class="form-control">
-                    </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="display: grid; grid-template-columns: 1.2fr 1.2fr 0.8fr; gap: 1rem;">
                     <div class="form-group">
                         <label>Celular</label>
                         <input type="tel" id="pacienteCelular" class="form-control" placeholder="(00) 00000-0000">
                     </div>
                     <div class="form-group">
-                        <label>E-mail</label>
-                        <input type="email" id="pacienteEmail" class="form-control">
+                        <label>Data</label>
+                        <input type="date" id="pacienteDataAtendimento" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Hora</label>
+                        <input type="time" id="pacienteHoraAtendimento" class="form-control">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Convênio</label>
-                    <input type="text" id="pacienteConvenio" class="form-control" placeholder="Ex: Particular, Unimed...">
+                    <label>Procedimento</label>
+                    <input type="text" id="pacienteProcedimento" class="form-control">
                 </div>
                 <div class="form-group">
                     <label>Observações</label>
@@ -771,16 +766,7 @@
             if (e.target === this) fecharModalPaciente();
         });
 
-        // Máscara de CPF e Celular no Modal
-        document.getElementById('pacienteCpf').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 11) value = value.slice(0, 11);
-            value = value.replace(/(\d{3})(\d)/, '$1.$2');
-            value = value.replace(/(\d{3})(\d)/, '$1.$2');
-            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-            e.target.value = value;
-        });
-
+        // Máscara de Celular no Modal
         document.getElementById('pacienteCelular').addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length > 11) value = value.slice(0, 11);
@@ -795,73 +781,193 @@
             if (!user) return;
 
             const nome = document.getElementById('pacienteNome').value;
-            const cpf = document.getElementById('pacienteCpf').value;
-            const nascimento = document.getElementById('pacienteNascimento').value;
             const celular = document.getElementById('pacienteCelular').value;
-            const email = document.getElementById('pacienteEmail').value;
-            const convenio = document.getElementById('pacienteConvenio').value;
+            const procedimento = document.getElementById('pacienteProcedimento').value;
+            const dataAtendimento = document.getElementById('pacienteDataAtendimento').value;
+            const horaAtendimento = document.getElementById('pacienteHoraAtendimento').value;
             const observacoes = document.getElementById('pacienteObservacoes').value;
 
             if (!nome) {
                 alert("O nome do paciente é obrigatório.");
                 return;
             }
+            
+            // Se preencheu a data, obriga a preencher a hora para agendar
+            if (dataAtendimento && !horaAtendimento) {
+                alert("Por favor, informe o horário do atendimento.");
+                return;
+            }
 
+            const batch = db.batch();
+
+            // 1. Criar Paciente
             const novoPaciente = {
                 id: Date.now(),
                 ownerId: user.uid,
                 nome: nome,
-                cpf: cpf,
-                nascimento: nascimento,
                 celular: celular,
-                email: email,
-                convenio: convenio,
+                procedimento: procedimento,
+                dataAtendimento: dataAtendimento,
                 observacoes: observacoes,
                 dataCadastro: new Date().toISOString()
             };
+            
+            const patientRef = db.collection('pacientes').doc(String(novoPaciente.id));
+            batch.set(patientRef, novoPaciente);
 
-            db.collection('pacientes').doc(String(novoPaciente.id)).set(novoPaciente)
+            // 2. Criar Agendamento (se houver data e hora)
+            if (dataAtendimento && horaAtendimento) {
+                const dateParts = dataAtendimento.split('-');
+                const year = parseInt(dateParts[0]);
+                const month = parseInt(dateParts[1]) - 1;
+                const day = parseInt(dateParts[2]);
+                
+                const appId = Date.now() + 100; // ID único
+                const userName = localStorage.getItem('userName') || 'Dentista';
+
+                const novoAgendamento = {
+                    id: appId,
+                    ownerId: user.uid,
+                    patient: nome,
+                    professional: userName,
+                    day: day, month: month, year: year, time: horaAtendimento,
+                    procedure: procedimento, celular: celular, notes: observacoes,
+                    type: 'normal', email: ''
+                };
+                
+                const appRef = db.collection('appointments').doc(String(appId));
+                batch.set(appRef, novoAgendamento);
+            }
+
+            batch.commit()
                 .then(() => {
-                    alert('Paciente cadastrado com sucesso!');
+                    alert(dataAtendimento ? 'Paciente e atendimento salvos com sucesso!' : 'Paciente cadastrado com sucesso!');
                     document.getElementById('formPaciente').reset();
                     fecharModalPaciente();
                 })
                 .catch(error => {
-                    alert('Erro ao cadastrar: ' + error.message);
+                    alert('Erro ao salvar: ' + error.message);
                 });
         });
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Variáveis globais para dados (Movidas para o topo para evitar erros de referência)
+            let appointments = [];
+            let patients = [];
+            
+            // --- CONTROLE DE ACESSO (PERMISSÕES) ---
+            const userRole = localStorage.getItem('userRole') || 'user';
+            const userName = localStorage.getItem('userName') || 'Mateus';
+            const userTitle = localStorage.getItem('userTitle') || 'Administrador';
+
             // Verificar Autenticação Firebase
             auth.onAuthStateChanged((user) => {
                 if (!user) {
                     window.location.href = 'login.html';
                 } else {
-                    // Carregar Dados do Firestore em Tempo Real
-                    db.collection('appointments').where('ownerId', '==', user.uid).onSnapshot(snap => {
-                        appointments = [];
-                        snap.forEach(doc => appointments.push(doc.data()));
-                        updateDashboard();
+                    // OTIMIZAÇÃO: Carregamento Instantâneo com Cache
+                    const cachedRole = localStorage.getItem('userRole');
+                    let listenersStarted = false;
+
+                    // Tentar carregar dados do cache local primeiro para exibição imediata
+                    const cacheKeyApps = `dash_apps_${user.uid}`;
+                    const cacheKeyPatients = `dash_patients_${user.uid}`;
+                    
+                    try {
+                        const localApps = localStorage.getItem(cacheKeyApps);
+                        const localPatients = localStorage.getItem(cacheKeyPatients);
+                        if (localApps) appointments = JSON.parse(localApps);
+                        if (localPatients) patients = JSON.parse(localPatients);
+                        if (appointments.length || patients.length) updateDashboard();
+                    } catch(e) { console.error('Erro ao carregar cache:', e); }
+
+                    const iniciarListeners = (isAdmin) => {
+                        if (listenersStarted) return;
+                        listenersStarted = true;
+
+                        // Carregar Agendamentos
+                        let appQuery = db.collection('appointments');
+                        if (!isAdmin) appQuery = appQuery.where('professional', '==', userName);
+                        
+                        appQuery.onSnapshot(snap => {
+                            appointments = [];
+                            snap.forEach(doc => appointments.push(doc.data()));
+                            localStorage.setItem(cacheKeyApps, JSON.stringify(appointments)); // Atualizar cache
+                            updateDashboard();
+                        });
+
+                        // Carregar Pacientes
+                        let patQuery = db.collection('pacientes');
+                        if (!isAdmin) patQuery = patQuery.where('ownerId', '==', user.uid);
+
+                        patQuery.onSnapshot(snap => {
+                            patients = [];
+                            snap.forEach(doc => patients.push(doc.data()));
+                            localStorage.setItem(cacheKeyPatients, JSON.stringify(patients)); // Atualizar cache
+                            updateDashboard();
+                        });
+                    };
+
+                    // Se tiver cache de função, inicia listeners imediatamente
+                    if (cachedRole) {
+                        iniciarListeners(cachedRole === 'admin');
+                    }
+
+                    // Verificar permissão de Admin (Fonte da Verdade)
+                    db.collection('users').doc(user.uid).get().then(doc => {
+                        const userData = doc.data();
+                        const isAdmin = userData && userData.role === 'Administrador';
+                        const remoteRole = isAdmin ? 'admin' : 'user';
+                        const remoteName = userData.name;
+
+                        // Sincronizar Nome do Usuário se estiver diferente do cache (Correção para carregar dados corretos)
+                        if (remoteName && remoteName !== userName) {
+                            localStorage.setItem('userName', remoteName);
+                            window.location.reload();
+                            return;
+                        }
+                        
+                        // Salvar permissões personalizadas no localStorage para uso imediato
+                        if (userData.permissions) {
+                            localStorage.setItem('userPermissions', JSON.stringify(userData.permissions));
+                        } else {
+                            localStorage.removeItem('userPermissions');
+                        }
+
+                        if (!cachedRole) {
+                            localStorage.setItem('userRole', remoteRole);
+                            // Se for admin e o padrão foi 'user', recarrega para liberar acesso
+                            if (isAdmin) {
+                                window.location.reload();
+                            } else {
+                                iniciarListeners(isAdmin);
+                            }
+                        } else if (cachedRole !== remoteRole) {
+                            // Se a permissão mudou, atualiza e recarrega
+                            localStorage.setItem('userRole', remoteRole);
+                            window.location.reload();
+                        }
+
+                        // Sincronizar Permissões Globais (Fallback)
+                        db.collection('settings').doc('global_permissions').get().then(settingsDoc => {
+                            if (settingsDoc.exists && settingsDoc.data().restrictedMenus) {
+                                localStorage.setItem('restrictedMenus', JSON.stringify(settingsDoc.data().restrictedMenus));
+                            }
+                        });
                     });
 
-                    db.collection('pacientes').where('ownerId', '==', user.uid).onSnapshot(snap => {
-                        patients = [];
-                        snap.forEach(doc => patients.push(doc.data()));
-                        updateDashboard();
-                    });
+                    if (isAdmin) {
+                        // Carregar Usuários Ativos (Sistema) - Apenas Admin
+                        db.collection('users').where('status', '==', 'active').onSnapshot(snap => {
+                            const el = document.getElementById('activeSystemUsers');
+                            if(el) el.textContent = snap.size;
+                        });
 
-                    // Carregar Usuários Ativos (Sistema)
-                    db.collection('users').where('status', '==', 'active').onSnapshot(snap => {
-                        const el = document.getElementById('activeSystemUsers');
-                        if(el) el.textContent = snap.size;
-                    });
+                        // Carregar Atividades Recentes - Apenas Admin
+                        updateRecentActivity();
+                    }
                 }
             });
-
-            // --- CONTROLE DE ACESSO (PERMISSÕES) ---
-            const userRole = localStorage.getItem('userRole') || 'admin';
-            const userName = localStorage.getItem('userName') || 'Mateus';
-            const userTitle = localStorage.getItem('userTitle') || 'Administrador';
 
             // 1. Atualizar Cabeçalho com Nome e Cargo
             document.querySelector('.user-name').textContent = userName;
@@ -891,19 +997,31 @@
             }
 
             // 3. Aplicar Restrições se for Usuário Comum
-            if (userRole === 'user') {
-                // Ocultar itens do menu lateral (Financeiro, Relatórios, Configurações, etc)
-                const savedRestricted = localStorage.getItem('restrictedMenus');
-                const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+            if (userRole !== 'admin') {
+                // Verificar permissões personalizadas (Firestore) ou fallback para restrições globais
+                const userPermissions = JSON.parse(localStorage.getItem('userPermissions'));
+                let allowedMenus = [];
+                
+                if (userPermissions) {
+                    allowedMenus = userPermissions;
+                } else {
+                    // Fallback: Lógica antiga de 'restrictedMenus'
+                    const savedRestricted = localStorage.getItem('restrictedMenus');
+                    const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+                    const allMenus = ['Dashboard', 'Minha Agenda', 'Atendimentos', 'Pacientes', 'Financeiro', 'Profissional', 'Relatórios', 'Faturas', 'Configurações', 'Usuários', 'Ajuda'];
+                    allowedMenus = allMenus.filter(m => !restrictedMenus.includes(m));
+                }
+
                 document.querySelectorAll('.nav-links a').forEach(link => {
                     const text = link.textContent.trim();
-                    if (restrictedMenus.includes(text)) {
+                    // Dashboard e Minha Agenda sempre visíveis para user (exceto se admin ocultar Minha Agenda, mas aqui é user)
+                    if (text !== 'Dashboard' && text !== 'Minha Agenda' && !allowedMenus.includes(text)) {
                         link.parentElement.style.display = 'none';
                     }
                 });
 
                 // Ocultar Cards Financeiros (Faturamento e Contas a Receber)
-                if (restrictedMenus.includes('Financeiro')) {
+                if (!allowedMenus.includes('Financeiro')) {
                     const statsCards = document.querySelectorAll('.stat-card');
                     if (statsCards.length >= 4) {
                         statsCards[0].style.display = 'none'; // Faturamento
@@ -928,8 +1046,8 @@
                 const actionBtns = document.querySelectorAll('.action-btn');
                 actionBtns.forEach(btn => {
                     const btnText = btn.textContent.trim();
-                    if ((btnText.includes('Fatura') && restrictedMenus.includes('Faturas')) || 
-                        (btnText.includes('Relatório') && restrictedMenus.includes('Relatórios'))) {
+                    if ((btnText.includes('Fatura') && !allowedMenus.includes('Faturas')) || 
+                        (btnText.includes('Relatório') && !allowedMenus.includes('Relatórios'))) {
                         btn.style.display = 'none';
                     }
                 });
@@ -937,6 +1055,21 @@
                 // Ocultar card de usuários ativos para não-admins
                 const cardUsers = document.getElementById('card-active-users');
                 if(cardUsers) cardUsers.style.display = 'none';
+
+                // Ocultar Atividades Recentes para não-admins
+                const recentActivity = document.querySelector('.recent-activity');
+                if (recentActivity) {
+                    recentActivity.style.display = 'none';
+                    const bottomGrid = document.querySelector('.dashboard-bottom-grid');
+                    if(bottomGrid) bottomGrid.style.gridTemplateColumns = '1fr';
+                }
+            } else if (userRole === 'admin') {
+                // Se for Admin, oculta "Minha Agenda" (foco em gestão geral)
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    if (link.getAttribute('href') === 'minha_agenda.html') {
+                        link.parentElement.style.display = 'none';
+                    }
+                });
             }
 
             const navLinks = document.querySelectorAll('.nav-links a');
@@ -981,13 +1114,13 @@
             let revenueChartInstance;
             let proceduresChartInstance;
 
-            // Variáveis globais para dados
-            let appointments = [];
-            let patients = [];
-
             function updateDashboard() {
                 // FILTRO DE SEGURANÇA: Se não for admin, filtrar dados apenas do profissional logado
                 let filteredAppointments = userRole === 'admin' ? appointments : appointments.filter(app => app.professional === userName);
+                
+                // Data de referência (Hoje 00:00) - Declarado no início para evitar erros
+                const nowZero = new Date();
+                nowZero.setHours(0,0,0,0);
 
                 // 1. Atualizar Cards de Estatísticas
                 // Pacientes Ativos
@@ -1013,8 +1146,6 @@
                     currentMonthRevenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
                 // 2. Contas a Receber (Agendamentos futuros ou não concluídos)
-                const nowZero = new Date();
-                nowZero.setHours(0,0,0,0);
                 const receivables = filteredAppointments
                     .filter(app => new Date(app.year, app.month, app.day) >= nowZero && app.type !== 'completed')
                     .reduce((acc, curr) => acc + (parseFloat(curr.value) || 0), 0);
@@ -1121,10 +1252,9 @@
 
                 const upcomingApps = filteredAppointments.filter(app => {
                     const appDate = new Date(app.year, app.month, app.day);
-                    const nowZero = new Date();
-                    nowZero.setHours(0,0,0,0);
                     return appDate >= nowZero;
                 }).sort((a, b) => {
+                    if (!a.time || !b.time) return 0;
                     const dateA = new Date(a.year, a.month, a.day, ...a.time.split(':'));
                     const dateB = new Date(b.year, b.month, b.day, ...b.time.split(':'));
                     return dateA - dateB;
@@ -1145,14 +1275,56 @@
                                 <h4>${app.patient}</h4>
                                 <p>${app.procedure || 'Consulta'} - ${app.type === 'confirmed' ? 'Confirmado' : app.type === 'pending' ? 'Pendente' : 'Agendado'}</p>
                             </div>
-                            <button class="btn-access" onclick="window.location.href='agendamento.html'" title="Acessar Agendamento"><i class="fas fa-chevron-right"></i></button>
+                            <button class="btn-access" onclick="window.location.href='agendamento.html'" title="Acessar Atendimentos"><i class="fas fa-chevron-right"></i></button>
                         </div>
                     `;
                 });
 
                 if (upcomingApps.length === 0) {
-                    appointmentsList.innerHTML = '<p style="color: #999; font-style: italic; padding: 1rem 0;">Nenhuma consulta futura agendada.</p>';
+                    appointmentsList.innerHTML = '<p style="color: #999; font-style: italic; padding: 1rem 0;">Nenhum atendimento futuro agendado.</p>';
                 }
+            }
+
+            function updateRecentActivity() {
+                const logs = JSON.parse(localStorage.getItem('auditLogs')) || [];
+                const activityList = document.querySelector('.activity-list');
+                
+                if (!activityList) return;
+                activityList.innerHTML = '';
+
+                if (logs.length === 0) {
+                    activityList.innerHTML = '<li style="color: #999; font-style: italic; padding: 1rem 0;">Nenhuma atividade recente registrada.</li>';
+                    return;
+                }
+
+                // Pegar os 5 mais recentes
+                const recentLogs = logs.slice(0, 5);
+
+                recentLogs.forEach(log => {
+                    const li = document.createElement('li');
+                    li.className = 'activity-item';
+                    
+                    // Ícone baseado na ação
+                    let iconClass = 'fas fa-info-circle';
+                    let iconColor = '#1a73e8';
+                    let bg = '#e3f2fd';
+
+                    if (log.action.includes('Criou') || log.action.includes('Agendou') || log.action.includes('Cadastrou')) { iconClass = 'fas fa-plus'; iconColor = '#2e7d32'; bg = '#e8f5e9'; }
+                    else if (log.action.includes('Excluiu')) { iconClass = 'fas fa-trash'; iconColor = '#c62828'; bg = '#ffebee'; }
+                    else if (log.action.includes('Editou') || log.action.includes('Atualizou')) { iconClass = 'fas fa-edit'; iconColor = '#f57c00'; bg = '#fff3e0'; }
+                    else if (log.action.includes('Concluiu')) { iconClass = 'fas fa-check'; iconColor = '#2e7d32'; bg = '#e8f5e9'; }
+
+                    li.innerHTML = `
+                        <div class="activity-icon" style="background-color: ${bg}; color: ${iconColor};">
+                            <i class="${iconClass}"></i>
+                        </div>
+                        <div class="activity-details">
+                            <p><strong>${log.actor}</strong> ${log.action.toLowerCase()} <strong>${log.target}</strong></p>
+                            <span class="activity-time">${log.timestamp}</span>
+                        </div>
+                    `;
+                    activityList.appendChild(li);
+                });
             }
 
             // Lógica do Filtro de Período

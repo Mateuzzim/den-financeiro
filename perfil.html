@@ -122,7 +122,8 @@
                 <h3 class="nav-title">Menu Principal</h3>
                 <ul class="nav-links">
                     <li><a href="dashboard.html"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
-                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Agendamento</a></li>
+                    <li><a href="minha_agenda.html"><i class="fas fa-user-clock nav-icon"></i> Minha Agenda</a></li>
+                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Atendimentos</a></li>
                     <li><a href="paciente.html"><i class="fas fa-user-injured nav-icon"></i> Pacientes</a></li>
                     <li><a href="financeiro.html"><i class="fas fa-chart-line nav-icon"></i> Financeiro</a></li>
                     <li><a href="profissonal.html"><i class="fas fa-user-md nav-icon"></i> Profissional</a></li>
@@ -257,17 +258,25 @@
                             document.querySelector('.profile-header-card h3').textContent = userName;
                             document.querySelector('.user-role').textContent = data.role || '';
                             
+                            const remoteRole = data.role === 'Administrador' ? 'admin' : 'user';
+                            const cachedRole = localStorage.getItem('userRole');
+                            const renderedRole = cachedRole || 'user';
+
                             localStorage.setItem('userName', userName);
-                            localStorage.setItem('userRole', data.role === 'Administrador' ? 'admin' : 'user');
+                            localStorage.setItem('userRole', remoteRole);
                             localStorage.setItem('userTitle', data.role || '');
                             
+                            if (renderedRole !== remoteRole) {
+                                window.location.reload();
+                            }
+
                             updateAvatars(userName, localStorage.getItem('userAvatar'));
                         }
                     });
                 }
             });
 
-            const userRole = localStorage.getItem('userRole') || 'admin';
+            const userRole = localStorage.getItem('userRole') || 'user';
             const userName = localStorage.getItem('userName') || 'Mateus';
             const userTitle = localStorage.getItem('userTitle') || 'Administrador';
             const userEmail = localStorage.getItem('userEmail') || 'mateus@den.com';
@@ -288,11 +297,22 @@
             
             updateAvatars(userName || 'U', userAvatar);
 
-            if (userRole === 'user') {
-                const savedRestricted = localStorage.getItem('restrictedMenus');
-                const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+            if (userRole !== 'admin') {
+                const userPermissions = JSON.parse(localStorage.getItem('userPermissions'));
+                let allowedMenus = [];
+                
+                if (userPermissions) {
+                    allowedMenus = userPermissions;
+                } else {
+                    const savedRestricted = localStorage.getItem('restrictedMenus');
+                    const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+                    const allMenus = ['Dashboard', 'Minha Agenda', 'Atendimentos', 'Pacientes', 'Financeiro', 'Profissional', 'Relatórios', 'Faturas', 'Configurações', 'Usuários', 'Ajuda'];
+                    allowedMenus = allMenus.filter(m => !restrictedMenus.includes(m));
+                }
+
                 document.querySelectorAll('.nav-links a').forEach(link => {
-                    if (restrictedMenus.includes(link.textContent.trim())) {
+                    const text = link.textContent.trim();
+                    if (text !== 'Dashboard' && text !== 'Minha Agenda' && !allowedMenus.includes(text)) {
                         link.parentElement.style.display = 'none';
                     }
                 });
@@ -300,6 +320,7 @@
         });
 
         function updateAvatars(name, imageSrc) {
+            if (!name) name = 'U';
             const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
             const headerAvatar = document.querySelector('.user-avatar');
             const profileAvatar = document.querySelector('.profile-avatar-large');
@@ -362,6 +383,15 @@
                 }
             }
 
+            const newName = document.getElementById('profileName').value;
+            const oldName = localStorage.getItem('userName');
+
+            if (newName !== oldName && oldName) {
+                if (!confirm(`Atenção: Você está alterando seu nome de "${oldName}" para "${newName}".\n\nIsso atualizará automaticamente todos os seus registros de atendimentos passados e futuros para manter o histórico.\n\nDeseja continuar?`)) {
+                    return;
+                }
+            }
+
             // Simulação de salvamento
             const btn = this.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
@@ -369,7 +399,6 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
             btn.disabled = true;
 
-            const newName = document.getElementById('profileName').value;
             const newEmail = document.getElementById('profileEmail').value;
             const newPhone = document.getElementById('profilePhone').value;
             const newSpecialty = document.getElementById('profileSpecialty').value;
@@ -387,6 +416,37 @@
                 promises.push(user.updatePassword(newPass));
             }
 
+            // Atualizar nome nos agendamentos se houver mudança para não perder o histórico
+            if (newName !== oldName && oldName) {
+                const updateAppointments = db.collection('appointments')
+                    .where('professional', '==', oldName)
+                    .get()
+                    .then(async snapshot => {
+                        if (snapshot.empty) return;
+
+                        const batches = [];
+                        let batch = db.batch();
+                        let count = 0;
+
+                        snapshot.forEach(doc => {
+                            batch.update(doc.ref, { professional: newName });
+                            count++;
+                            if (count >= 450) { // Margem de segurança para o limite de 500 do Firestore
+                                batches.push(batch.commit());
+                                batch = db.batch();
+                                count = 0;
+                            }
+                        });
+                        
+                        if (count > 0) {
+                            batches.push(batch.commit());
+                        }
+                        
+                        return Promise.all(batches);
+                    });
+                promises.push(updateAppointments);
+            }
+
             Promise.all(promises).then(() => {
                 localStorage.setItem('userName', newName);
                 localStorage.setItem('userEmail', newEmail);
@@ -396,6 +456,17 @@
                 document.querySelector('.user-name').textContent = newName;
                 document.querySelector('.profile-header-card h3').textContent = newName;
                 updateAvatars(newName, localStorage.getItem('userAvatar'));
+
+                // Atualizar cache local de usuários (se existir) para refletir em outras páginas imediatamente
+                let systemUsers = JSON.parse(localStorage.getItem('systemUsers'));
+                if (systemUsers) {
+                    const userIndex = systemUsers.findIndex(u => u.email === newEmail);
+                    if (userIndex > -1) {
+                        systemUsers[userIndex].name = newName;
+                        systemUsers[userIndex].celular = newPhone;
+                        localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
+                    }
+                }
 
                 alert('Dados atualizados com sucesso!');
                 document.getElementById('currentPassword').value = '';

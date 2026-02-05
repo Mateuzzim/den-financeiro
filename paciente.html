@@ -143,7 +143,8 @@
                 <h3 class="nav-title">Menu Principal</h3>
                 <ul class="nav-links">
                     <li><a href="dashboard.html"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
-                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Agendamento</a></li>
+                    <li><a href="minha_agenda.html"><i class="fas fa-user-clock nav-icon"></i> Minha Agenda</a></li>
+                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Atendimentos</a></li>
                     <li><a href="paciente.html" class="active"><i class="fas fa-user-injured nav-icon"></i> Pacientes</a></li>
                     <li><a href="financeiro.html"><i class="fas fa-chart-line nav-icon"></i> Financeiro</a></li>
                     <li><a href="profissonal.html"><i class="fas fa-user-md nav-icon"></i> Profissional</a></li>
@@ -167,7 +168,7 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
                     <button class="btn-outline" onclick="window.location.href='agendamento.html'">
-                        <i class="fas fa-arrow-left"></i> Voltar para Agendamento
+                        <i class="fas fa-arrow-left"></i> Voltar para Atendimentos
                     </button>
                     <div class="current-date"><strong>Data atual:</strong> 04 de Fevereiro de 2026</div>
                 </div>
@@ -331,10 +332,28 @@
             }
 
             if (userRole === 'user') {
-                const savedRestricted = localStorage.getItem('restrictedMenus');
-                const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+                const userPermissions = JSON.parse(localStorage.getItem('userPermissions'));
+                let allowedMenus = [];
+                
+                if (userPermissions) {
+                    allowedMenus = userPermissions;
+                } else {
+                    const savedRestricted = localStorage.getItem('restrictedMenus');
+                    const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+                    const allMenus = ['Dashboard', 'Minha Agenda', 'Atendimentos', 'Pacientes', 'Financeiro', 'Profissional', 'Relatórios', 'Faturas', 'Configurações', 'Usuários', 'Ajuda'];
+                    allowedMenus = allMenus.filter(m => !restrictedMenus.includes(m));
+                }
+
                 document.querySelectorAll('.nav-links a').forEach(link => {
-                    if (restrictedMenus.includes(link.textContent.trim())) {
+                    const text = link.textContent.trim();
+                    if (text !== 'Dashboard' && text !== 'Minha Agenda' && !allowedMenus.includes(text)) {
+                        link.parentElement.style.display = 'none';
+                    }
+                });
+            } else if (userRole === 'admin') {
+                // Ocultar Minha Agenda para Admin
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    if (link.getAttribute('href') === 'minha_agenda.html') {
                         link.parentElement.style.display = 'none';
                     }
                 });
@@ -351,10 +370,16 @@
             // Listener de Autenticação e Dados em Tempo Real
             auth.onAuthStateChanged((user) => {
                 if (user) {
-                    // GARANTIA DE SEGURANÇA: Busca APENAS os pacientes onde ownerId é igual ao ID do usuário logado
-                    db.collection('pacientes')
-                        .where('ownerId', '==', user.uid)
-                        .onSnapshot((snapshot) => {
+                    db.collection('users').doc(user.uid).get().then(uDoc => {
+                        const userData = uDoc.data();
+                        const isAdmin = userData && userData.role === 'Administrador';
+
+                        let query = db.collection('pacientes');
+                        if (!isAdmin) {
+                            query = query.where('ownerId', '==', user.uid);
+                        }
+
+                        query.onSnapshot((snapshot) => {
                             listaPacientes = [];
                             snapshot.forEach((doc) => {
                                 listaPacientes.push(doc.data());
@@ -365,6 +390,7 @@
                         }, (error) => {
                             console.error("Erro ao buscar pacientes:", error);
                         });
+                    });
                 } else {
                     window.location.href = 'login.html';
                 }
@@ -466,12 +492,18 @@
                 if (id) {
                     // Atualizar no Firestore
                     db.collection('pacientes').doc(String(id)).update(paciente)
-                        .then(() => finalizarSalvar('Paciente atualizado com sucesso!'))
+                        .then(() => {
+                            logAudit('Atualizou paciente', paciente.nome);
+                            finalizarSalvar('Paciente atualizado com sucesso!');
+                        })
                         .catch(err => alert('Erro ao atualizar: ' + err.message));
                 } else {
                     // Criar no Firestore
                     db.collection('pacientes').doc(String(paciente.id)).set(paciente)
-                        .then(() => finalizarSalvar('Paciente cadastrado com sucesso!'))
+                        .then(() => {
+                            logAudit('Cadastrou paciente', paciente.nome);
+                            finalizarSalvar('Paciente cadastrado com sucesso!');
+                        })
                         .catch(err => alert('Erro ao cadastrar: ' + err.message));
                 }
 
@@ -582,8 +614,12 @@
             // Função global para deletar (necessário para o onclick inline)
             window.deletarPaciente = function(id) {
                 if(confirm('Deseja realmente excluir este paciente?')) {
+                    const p = listaPacientes.find(p => p.id === id);
                     db.collection('pacientes').doc(String(id)).delete()
-                        .then(() => alert('Paciente excluído.'))
+                        .then(() => {
+                            logAudit('Excluiu paciente', p ? p.nome : 'Desconhecido');
+                            alert('Paciente excluído.');
+                        })
                         .catch(err => alert('Erro ao excluir: ' + err.message));
                 }
             };
@@ -677,6 +713,22 @@
             window.fecharModal = function() {
                 document.getElementById('modalDetalhes').style.display = 'none';
             };
+
+            // Função de Auditoria
+            function logAudit(acao, alvo) {
+                const logs = JSON.parse(localStorage.getItem('auditLogs')) || [];
+                const actor = localStorage.getItem('userName') || 'Usuário';
+                const newLog = {
+                    id: Date.now(),
+                    timestamp: new Date().toLocaleString('pt-BR'),
+                    actor: actor,
+                    action: acao,
+                    target: alvo
+                };
+                logs.unshift(newLog);
+                if (logs.length > 50) logs.pop();
+                localStorage.setItem('auditLogs', JSON.stringify(logs));
+            }
 
             // Fechar modal ao clicar fora
             document.getElementById('modalDetalhes').addEventListener('click', function(e) {

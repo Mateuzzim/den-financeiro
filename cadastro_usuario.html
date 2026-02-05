@@ -253,6 +253,14 @@
                         userRole = 'Administrador';
                     }
 
+                    // Calcular data de vencimento (15 dias de teste)
+                    const now = new Date();
+                    now.setDate(now.getDate() + 15);
+                    const d = String(now.getDate()).padStart(2, '0');
+                    const m = String(now.getMonth() + 1).padStart(2, '0');
+                    const y = now.getFullYear();
+                    const expireDate = `${d}/${m}/${y}`;
+
                     // 2. Criar usuário no Firebase Auth
                     return auth.createUserWithEmailAndPassword(email, password)
                     .then((userCredential) => {
@@ -261,7 +269,10 @@
                             name: nome,
                             email: email,
                             role: userRole, // Define como 'Administrador' se for o primeiro, senão 'Dentista'
-                            createdAt: new Date().toISOString()
+                            createdAt: new Date().toISOString(),
+                            plan: 'Teste Grátis (15 dias)',
+                            status: 'active',
+                            expire: expireDate
                         });
                     });
                 })

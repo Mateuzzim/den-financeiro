@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Agenda | Den</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦷</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f4f8; color: #333; line-height: 1.6; zoom: 90%; }
+        
+        /* Layout Base */
+        .header { background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); color: white; padding: 1.2rem 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; }
+        .logo-container { display: flex; align-items: center; gap: 15px; }
+        .logo-symbol { font-size: 2.4rem; background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.5)); }
+        .logo-text h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: 2px; background: linear-gradient(90deg, #ffffff 0%, #e3f2fd 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 0; line-height: 1; }
+        .logo-text p { font-size: 0.7rem; color: #81d4fa; letter-spacing: 4px; text-transform: uppercase; margin-top: 4px; font-weight: 600; }
+        
+        .user-menu { display: flex; align-items: center; gap: 20px; }
+        .user-info { text-align: right; }
+        .user-name { font-weight: 600; font-size: 1.1rem; }
+        .user-role { font-size: 0.85rem; opacity: 0.9; }
+        .user-avatar { width: 50px; height: 50px; border-radius: 50%; background-color: #bbdefb; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #0d47a1; font-size: 1.2rem; border: 3px solid rgba(255, 255, 255, 0.3); text-decoration: none; }
+
+        .main-container { display: flex; min-height: calc(100vh - 80px); }
+        .sidebar { width: 260px; background-color: white; padding: 2rem 0; box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
+        .nav-section { margin-bottom: 2rem; }
+        .nav-title { font-size: 0.85rem; text-transform: uppercase; color: #5f6368; font-weight: 600; padding: 0 1.5rem; margin-bottom: 0.8rem; letter-spacing: 0.5px; }
+        .nav-links { list-style: none; }
+        .nav-links li { margin-bottom: 2px; }
+        .nav-links a { display: flex; align-items: center; gap: 15px; padding: 1rem 1.5rem; color: #3c4043; text-decoration: none; font-weight: 500; transition: all 0.2s ease; border-left: 4px solid transparent; }
+        .nav-links a:hover { background-color: #f1f8ff; color: #1a73e8; border-left-color: #1a73e8; }
+        .nav-links a.active { background-color: #e8f0fe; color: #1a73e8; border-left-color: #1a73e8; font-weight: 600; }
+        .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
+        
+        .content-area { flex: 1; padding: 2.5rem; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .page-title h2 { font-size: 1.8rem; color: #1a237e; font-weight: 700; }
+        
+        /* Estilos da Minha Agenda */
+        .agenda-container { max-width: 100%; margin: 0; }
+        .agenda-controls { background: white; padding: 1rem 1.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .date-nav { display: flex; align-items: center; gap: 15px; }
+        .date-display { font-size: 1.2rem; font-weight: 700; color: #1a237e; min-width: 200px; text-align: center; }
+        
+        .appointment-card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 6px solid #1a73e8; display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s; flex-wrap: wrap; gap: 1rem; }
+        .appointment-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        
+        .appointment-card.completed { border-left-color: #4caf50; background-color: #f9fff9; }
+        .appointment-card.pending { border-left-color: #ff9800; }
+        .appointment-card.confirmed { border-left-color: #2196f3; }
+        .appointment-card.missed { border-left-color: #d32f2f; background-color: #fff5f5; opacity: 0.8; }
+        
+        .time-slot { font-size: 1.8rem; font-weight: 700; color: #333; min-width: 100px; text-align: center; line-height: 1; }
+        .time-slot span { font-size: 0.8rem; color: #666; font-weight: 400; display: block; margin-top: 5px; }
+        
+        .patient-info { flex: 1; padding: 0 1.5rem; min-width: 200px; }
+        .patient-info h3 { margin: 0 0 5px 0; color: #1a237e; font-size: 1.2rem; }
+        .patient-info p { margin: 0; color: #5f6368; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
+        
+        .actions { display: flex; gap: 10px; }
+        .btn-icon { width: 45px; height: 45px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: background 0.2s; }
+        .btn-check { background: #e8f5e9; color: #2e7d32; }
+        .btn-check:hover { background: #c8e6c9; }
+        .btn-whatsapp { background: #e0f2f1; color: #00695c; }
+        .btn-whatsapp:hover { background: #b2dfdb; }
+        .btn-missed { background: #ffebee; color: #c62828; }
+        .btn-missed:hover { background: #ffcdd2; }
+        
+        .empty-state { text-align: center; padding: 3rem; color: #9aa0a6; }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+
+        .mobile-menu-btn { display: none; background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; margin-right: 10px; }
+
+        @media (max-width: 768px) {
+            body { zoom: 100%; }
+            .main-container { flex-direction: column; }
+            .sidebar { display: none; width: 100%; padding: 1rem; }
+            .sidebar.active { display: block; }
+            .content-area { padding: 1rem; }
+            .mobile-menu-btn { display: block; }
+            .user-info { display: none; }
+            
+            .appointment-card { flex-direction: column; align-items: flex-start; padding: 1.2rem; }
+            .time-slot { text-align: left; min-width: auto; display: flex; align-items: baseline; gap: 10px; }
+            .patient-info { padding: 0; width: 100%; }
+            .actions { width: 100%; justify-content: flex-end; border-top: 1px solid #eee; padding-top: 1rem; }
+            
+            .agenda-controls { flex-direction: column; gap: 1rem; }
+            .date-nav { width: 100%; justify-content: space-between; }
+        }
+
+        /* Layout de Grade (6 por linha) */
+        #appointmentsList {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1rem;
+        }
+        
+        #appointmentsList .empty-state {
+            grid-column: 1 / -1;
+        }
+
+        #appointmentsList .appointment-card {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 0;
+            height: 100%;
+            min-width: 0;
+        }
+        
+        #appointmentsList .appointment-card .time-slot {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+        }
+        
+        #appointmentsList .appointment-card .patient-info {
+            padding: 0;
+            width: 100%;
+            flex: 1;
+        }
+        
+        #appointmentsList .appointment-card .actions {
+            width: 100%;
+            justify-content: flex-end;
+            margin-top: 1rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        /* Responsividade para telas menores */
+        @media (max-width: 1600px) {
+            #appointmentsList { grid-template-columns: repeat(4, 1fr); }
+        }
+        @media (max-width: 1200px) {
+            #appointmentsList { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 900px) {
+            #appointmentsList { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 600px) {
+            #appointmentsList { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div style="display: flex; align-items: center;">
+            <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active')"><i class="fas fa-bars"></i></button>
+            <div class="logo-container">
+                <div class="logo-symbol"><i class="fas fa-tooth"></i></div>
+                <div class="logo-text">
+                    <h1>DEN</h1>
+                    <p>FINANCEIRO</p>
+                </div>
+            </div>
+        </div>
+        <div class="user-menu">
+            <div class="user-info">
+                <div class="user-name">Mateus</div>
+                <div class="user-role">Administrador</div>
+            </div>
+            <a href="perfil.html" class="user-avatar" title="Ir para Meu Perfil">M</a>
+            <a href="index.html" style="color: white; opacity: 0.8; font-size: 1.2rem; margin-left: 10px;" title="Sair"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <nav class="sidebar">
+            <div class="nav-section">
+                <h3 class="nav-title">Menu Principal</h3>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
+                    <li><a href="minha_agenda.html" class="active"><i class="fas fa-user-clock nav-icon"></i> Minha Agenda</a></li>
+                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Atendimentos</a></li>
+                    <li><a href="paciente.html"><i class="fas fa-user-injured nav-icon"></i> Pacientes</a></li>
+                    <li><a href="financeiro.html"><i class="fas fa-chart-line nav-icon"></i> Financeiro</a></li>
+                    <li><a href="profissonal.html"><i class="fas fa-user-md nav-icon"></i> Profissional</a></li>
+                    <li><a href="relatorios.html"><i class="fas fa-chart-pie nav-icon"></i> Relatórios</a></li>
+                </ul>
+            </div>
+            <div class="nav-section">
+                <h3 class="nav-title">Ferramentas</h3>
+                <ul class="nav-links">
+                    <li><a href="faturas.html"><i class="fas fa-file-invoice-dollar nav-icon"></i> Faturas</a></li>
+                    <li><a href="configurações.html"><i class="fas fa-cogs nav-icon"></i> Configurações</a></li>
+                    <li><a href="usuarios.html"><i class="fas fa-users-cog nav-icon"></i> Usuários</a></li>
+                    <li><a href="ajuda.html"><i class="fas fa-question-circle nav-icon"></i> Ajuda</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="content-area">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Minha Agenda</h2>
+                    <p>Seus compromissos do dia.</p>
+                </div>
+            </div>
+
+            <div class="agenda-container">
+                <div class="agenda-controls">
+                    <div class="date-nav">
+                        <button class="btn-icon" style="width: 35px; height: 35px; font-size: 1rem; background: #f0f4f8;" onclick="mudarDia(-1)"><i class="fas fa-chevron-left"></i></button>
+                        <div class="date-display" id="currentDateDisplay">Hoje</div>
+                        <button class="btn-icon" style="width: 35px; height: 35px; font-size: 1rem; background: #f0f4f8;" onclick="mudarDia(1)"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <button onclick="irParaHoje()" style="background: #1a73e8; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; cursor: pointer; font-weight: 600;">Hoje</button>
+                </div>
+
+                <div id="appointmentsList">
+                    <!-- Lista de agendamentos será renderizada aqui -->
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-day"></i>
+                        <p>Carregando sua agenda...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let userName = localStorage.getItem('userName') || '';
+        let unsubscribe = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar dados do cabeçalho imediatamente do cache local para evitar delay
+            const cachedName = localStorage.getItem('userName');
+            const cachedRole = localStorage.getItem('userTitle');
+            const cachedAvatar = localStorage.getItem('userAvatar');
+
+            if (cachedName && document.querySelector('.user-name')) {
+                document.querySelector('.user-name').textContent = cachedName;
+            }
+            if (cachedRole && document.querySelector('.user-role')) {
+                document.querySelector('.user-role').textContent = cachedRole;
+            }
+            if (cachedAvatar) {
+                const avatarEl = document.querySelector('.user-avatar');
+                if (avatarEl) {
+                    avatarEl.style.backgroundImage = `url('${cachedAvatar}')`;
+                    avatarEl.style.backgroundSize = 'cover';
+                    avatarEl.style.backgroundPosition = 'center';
+                    avatarEl.textContent = '';
+                }
+            }
+
+            // Ocultar menus restritos para usuários comuns
+            const userRole = localStorage.getItem('userRole') || 'user';
+            if (userRole === 'user') {
+                const userPermissions = JSON.parse(localStorage.getItem('userPermissions'));
+                let allowedMenus = [];
+                
+                if (userPermissions) {
+                    allowedMenus = userPermissions;
+                } else {
+                    const savedRestricted = localStorage.getItem('restrictedMenus');
+                    const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+                    const allMenus = ['Dashboard', 'Minha Agenda', 'Atendimentos', 'Pacientes', 'Financeiro', 'Profissional', 'Relatórios', 'Faturas', 'Configurações', 'Usuários', 'Ajuda'];
+                    allowedMenus = allMenus.filter(m => !restrictedMenus.includes(m));
+                }
+
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    const text = link.textContent.trim();
+                    if (text !== 'Dashboard' && text !== 'Minha Agenda' && !allowedMenus.includes(text)) {
+                        link.parentElement.style.display = 'none';
+                    }
+                });
+            }
+
+            auth.onAuthStateChanged((user) => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                } else {
+                    // Atualizar nome se necessário
+                    db.collection('users').doc(user.uid).get().then(doc => {
+                        if(doc.exists) {
+                            const data = doc.data();
+                            const remoteName = data.name;
+                            
+                            // Atualizar header com dados do Firestore
+                            const userRole = data.role || 'Profissional';
+                            
+                            if(document.querySelector('.user-name')) document.querySelector('.user-name').textContent = remoteName;
+                            if(document.querySelector('.user-role')) document.querySelector('.user-role').textContent = userRole;
+                            
+                            // Atualizar cache de título/cargo para próximos acessos
+                            localStorage.setItem('userTitle', userRole);
+                            
+                            // Atualizar Avatar se existir no localStorage
+                            const userAvatar = localStorage.getItem('userAvatar');
+                            const avatarEl = document.querySelector('.user-avatar');
+                            if (userAvatar && avatarEl) {
+                                avatarEl.style.backgroundImage = `url('${userAvatar}')`;
+                                avatarEl.style.backgroundSize = 'cover';
+                                avatarEl.style.backgroundPosition = 'center';
+                                avatarEl.textContent = '';
+                            }
+                            
+                            // OTIMIZAÇÃO: Só recarrega a agenda se o nome do usuário mudou
+                            // Isso evita cancelar a busca inicial que já está em andamento
+                            if (remoteName && remoteName !== userName) {
+                                userName = remoteName;
+                                localStorage.setItem('userName', userName);
+                                
+                                // Se descobrir que é admin, redireciona ou oculta
+                                if (data.role === 'Administrador') {
+                                    // Opcional: Redirecionar para dashboard se admin não deve ver esta página
+                                    // window.location.href = 'dashboard.html';
+                                    // Por enquanto, apenas oculta o link no menu:
+                                    const link = document.querySelector('a[href="minha_agenda.html"]');
+                                    if(link) link.parentElement.style.display = 'none';
+                                }
+                                
+                                renderAgenda();
+                            }
+                        }
+                    });
+                }
+            });
+            
+            if (userName) {
+                renderAgenda();
+            }
+        });
+
+        function mudarDia(delta) {
+            currentDate.setDate(currentDate.getDate() + delta);
+            renderAgenda();
+        }
+
+        function irParaHoje() {
+            currentDate = new Date();
+            renderAgenda();
+        }
+
+        function renderAgenda() {
+            // Atualizar display da data
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            let dateStr = currentDate.toLocaleDateString('pt-BR', options);
+            // Converter para maiúsculas
+            dateStr = dateStr.toUpperCase();
+            document.getElementById('currentDateDisplay').textContent = dateStr;
+
+            const day = currentDate.getDate();
+            const month = currentDate.getMonth();
+            const year = currentDate.getFullYear();
+            const cacheKey = `agenda_cache_${userName}_${year}_${month}_${day}`;
+
+            const container = document.getElementById('appointmentsList');
+
+            // 1. Tentar carregar do cache local primeiro (Instantâneo)
+            const cachedData = localStorage.getItem(cacheKey);
+            if (cachedData) {
+                try {
+                    renderList(JSON.parse(cachedData));
+                } catch(e) { console.error(e); }
+            } else {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Buscando horários...</p></div>';
+            }
+            
+            if (unsubscribe) {
+                unsubscribe();
+            }
+
+            // Usar onSnapshot para carregamento em tempo real e cache (mais rápido)
+            unsubscribe = db.collection('appointments')
+                .where('professional', '==', userName)
+                .where('day', '==', day)
+                .where('month', '==', month)
+                .where('year', '==', year)
+                .onSnapshot(snapshot => {
+                    const apps = [];
+                    snapshot.forEach(doc => apps.push(doc.data()));
+                    
+                    // Atualizar cache
+                    localStorage.setItem(cacheKey, JSON.stringify(apps));
+                    
+                    renderList(apps);
+                }, error => {
+                    console.error("Erro ao buscar agenda:", error);
+                    if (!cachedData) {
+                        container.innerHTML = '<div class="empty-state"><p>Erro ao carregar dados.</p></div>';
+                    }
+                });
+        }
+
+        function renderList(apps) {
+            const container = document.getElementById('appointmentsList');
+            
+            if (apps.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-check"></i>
+                        <p>Nenhum atendimento para este dia.</p>
+                    </div>`;
+                return;
+            }
+
+            // Ordenar por horário
+            apps.sort((a, b) => a.time.localeCompare(b.time));
+
+            container.innerHTML = '';
+            apps.forEach(app => {
+                let statusClass = 'pending';
+                let statusText = 'Pendente';
+                if(app.type === 'completed') { statusClass = 'completed'; statusText = 'Concluído'; }
+                else if(app.type === 'confirmed') { statusClass = 'confirmed'; statusText = 'Confirmado'; }
+                else if(app.type === 'missed') { statusClass = 'missed'; statusText = 'Faltou'; }
+                
+                const div = document.createElement('div');
+                div.className = `appointment-card ${statusClass}`;
+                div.innerHTML = `
+                    <div class="time-slot">
+                        ${app.time}
+                        <span>${statusText}</span>
+                    </div>
+                    <div class="patient-info">
+                        <h3>${app.patient}</h3>
+                        <p><i class="fas fa-tooth"></i> ${app.procedure || 'Consulta'}</p>
+                        ${app.notes ? `<p><i class="fas fa-sticky-note"></i> ${app.notes}</p>` : ''}
+                    </div>
+                    <div class="actions">
+                        ${app.celular ? `
+                        <button class="btn-icon btn-whatsapp" onclick="window.open('https://wa.me/55${app.celular.replace(/\D/g,'')}', '_blank')" title="Chamar no WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </button>` : ''}
+                        ${app.type !== 'completed' && app.type !== 'missed' ? `
+                        <button class="btn-icon btn-check" onclick="concluirAtendimento(${app.id})" title="Concluir Atendimento">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn-icon btn-missed" onclick="marcarFalta(${app.id})" title="Paciente Faltou">
+                            <i class="fas fa-user-times"></i>
+                        </button>` : ''}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function concluirAtendimento(id) {
+            if(confirm('Marcar este atendimento como concluído?')) {
+                db.collection('appointments').doc(String(id)).update({ type: 'completed' });
+            }
+        }
+
+        function marcarFalta(id) {
+            if(confirm('Confirmar que o paciente faltou?')) {
+                db.collection('appointments').doc(String(id)).update({ type: 'missed' });
+            }
+        }
+    </script>
+</body>
+</html>

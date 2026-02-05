@@ -110,7 +110,8 @@
                 <h3 class="nav-title">Menu Principal</h3>
                 <ul class="nav-links">
                     <li><a href="dashboard.html"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
-                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Agendamento</a></li>
+                    <li><a href="minha_agenda.html"><i class="fas fa-user-clock nav-icon"></i> Minha Agenda</a></li>
+                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Atendimentos</a></li>
                     <li><a href="paciente.html"><i class="fas fa-user-injured nav-icon"></i> Pacientes</a></li>
                     <li><a href="financeiro.html"><i class="fas fa-chart-line nav-icon"></i> Financeiro</a></li>
                     <li><a href="profissonal.html"><i class="fas fa-user-md nav-icon"></i> Profissional</a></li>
@@ -260,12 +261,20 @@
                 if (!user) {
                     window.location.href = 'login.html';
                 } else {
-                    // Carregar Pacientes do Firestore
-                    db.collection('pacientes').where('ownerId', '==', user.uid).get().then(snapshot => {
-                        const patients = [];
-                        snapshot.forEach(doc => patients.push(doc.data()));
-                        window.firestorePatients = patients; // Armazena globalmente
-                        renderPatientReports(); // Renderiza com dados reais
+                    db.collection('users').doc(user.uid).get().then(uDoc => {
+                        const userData = uDoc.data();
+                        const isAdmin = userData && userData.role === 'Administrador';
+
+                        let query = db.collection('pacientes');
+                        if (!isAdmin) query = query.where('ownerId', '==', user.uid);
+
+                        query.get().then(snapshot => {
+                            const patients = [];
+                            snapshot.forEach(doc => patients.push(doc.data()));
+                            window.firestorePatients = patients; // Armazena globalmente
+                            renderPatientReports(); // Renderiza com dados reais
+                            renderUserReports(); // Renderiza relatórios de sistema
+                        });
                     });
                 }
             });
@@ -289,14 +298,25 @@
             }
 
             if (userRole === 'user') {
-                const savedRestricted = localStorage.getItem('restrictedMenus');
-                const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+                const userPermissions = JSON.parse(localStorage.getItem('userPermissions'));
+                let allowedMenus = [];
+                
+                if (userPermissions) {
+                    allowedMenus = userPermissions;
+                } else {
+                    const savedRestricted = localStorage.getItem('restrictedMenus');
+                    const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+                    const allMenus = ['Dashboard', 'Minha Agenda', 'Atendimentos', 'Pacientes', 'Financeiro', 'Profissional', 'Relatórios', 'Faturas', 'Configurações', 'Usuários', 'Ajuda'];
+                    allowedMenus = allMenus.filter(m => !restrictedMenus.includes(m));
+                }
+
                 document.querySelectorAll('.nav-links a').forEach(link => {
-                    if (restrictedMenus.includes(link.textContent.trim())) {
+                    const text = link.textContent.trim();
+                    if (text !== 'Dashboard' && text !== 'Minha Agenda' && !allowedMenus.includes(text)) {
                         link.parentElement.style.display = 'none';
                     }
                 });
-                if (restrictedMenus.includes('Relatórios')) {
+                if (!allowedMenus.includes('Relatórios')) {
                     alert('Acesso negado: Você não tem permissão para acessar este módulo.');
                     window.location.href = 'dashboard.html';
                 }
@@ -305,6 +325,13 @@
                 // Se for usuário comum (Dentista/Recepcionista), esconde relatórios de sistema e mostra apenas pacientes.
                 document.getElementById('adminReportsSection').style.display = 'none';
                 document.querySelector('#userReportsSection .section-title').style.marginTop = '0'; // Ajusta espaçamento
+            } else if (userRole === 'admin') {
+                // Ocultar Minha Agenda para Admin
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    if (link.getAttribute('href') === 'minha_agenda.html') {
+                        link.parentElement.style.display = 'none';
+                    }
+                });
             }
 
             let patientsChartInstance = null;
@@ -313,16 +340,9 @@
 
             // Renderização dos Gráficos
             function renderUserReports() {
-                // Dados simulados caso não existam no localStorage
-                const defaultUsers = [
-                    { role: 'Administrador', plan: 'Anual', status: 'active' },
-                    { role: 'Dentista', plan: 'Mensal', status: 'active' },
-                    { role: 'Dentista', plan: 'Trimestral', status: 'active' },
-                    { role: 'Recepcionista', plan: 'Mensal', status: 'active' },
-                    { role: 'Dentista', plan: 'Mensal', status: 'inactive' }
-                ];
-                
-                const users = JSON.parse(localStorage.getItem('systemUsers')) || defaultUsers;
+                db.collection('users').get().then(snapshot => {
+                    const users = [];
+                    snapshot.forEach(doc => users.push(doc.data()));
                 
                 // Cálculos
                 const total = users.length;
@@ -410,6 +430,7 @@
                         maintainAspectRatio: false,
                         scales: { y: { beginAtZero: true } }
                     }
+                });
                 });
             }
 
@@ -621,7 +642,6 @@
                 doc.save('relatorio_pacientes.pdf');
             };
 
-            renderUserReports();
         });
     </script>
 </body>

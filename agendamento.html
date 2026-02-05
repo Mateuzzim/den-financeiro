@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agendamento | Den</title>
+    <title>Atendimentos | Den</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦷</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Firebase SDKs -->
@@ -109,7 +109,7 @@
         .btn-icon { background: #f0f4f8; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #5f6368; transition: background 0.2s; }
         .btn-icon:hover { background: #e0e0e0; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #eee; border: 1px solid #eee; }
-        .calendar-day-header { background: #f8f9fa; padding: 10px; text-align: center; font-weight: 600; color: #5f6368; font-size: 0.85rem; text-transform: uppercase; }
+        .calendar-day-header { background: #1a73e8; padding: 10px; text-align: center; font-weight: 600; color: white; font-size: 0.85rem; text-transform: uppercase; }
         .calendar-day { background: white; min-height: 120px; padding: 8px; position: relative; }
         .calendar-day.other-month { background: #fcfcfc; color: #ccc; }
         .calendar-day.today { background: #f1f8ff; }
@@ -120,7 +120,8 @@
         .appointment-tag:hover { opacity: 0.9; }
         .appointment-tag.confirmed { background: #e8f5e9; color: #2e7d32; border-left-color: #2e7d32; }
         .appointment-tag.pending { background: #fff3e0; color: #ef6c00; border-left-color: #ef6c00; }
-        .appointment-tag.completed { background: #eeeeee; color: #616161; border-left-color: #757575; text-decoration: line-through; }
+        .appointment-tag.completed { background: #c8e6c9; color: #1b5e20; border-left-color: #2e7d32; text-decoration: none; }
+        .appointment-tag.missed { background: #ffebee; color: #c62828; border-left-color: #c62828; opacity: 0.8; }
 
         /* Waiting List */
         .waiting-list-container { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: fit-content; }
@@ -194,7 +195,8 @@
                 <h3 class="nav-title">Menu Principal</h3>
                 <ul class="nav-links">
                     <li><a href="dashboard.html"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
-                    <li><a href="agendamento.html" class="active"><i class="fas fa-calendar-check nav-icon"></i> Agendamento</a></li>
+                    <li><a href="minha_agenda.html"><i class="fas fa-user-clock nav-icon"></i> Minha Agenda</a></li>
+                    <li><a href="agendamento.html" class="active"><i class="fas fa-calendar-check nav-icon"></i> Atendimentos</a></li>
                     <li><a href="paciente.html"><i class="fas fa-user-injured nav-icon"></i> Pacientes</a></li>
                     <li><a href="financeiro.html"><i class="fas fa-chart-line nav-icon"></i> Financeiro</a></li>
                     <li><a href="profissonal.html"><i class="fas fa-user-md nav-icon"></i> Profissional</a></li>
@@ -214,7 +216,7 @@
         <main class="content-area">
             <div class="page-header">
                 <div class="page-title">
-                    <h2>Agendamento</h2>
+                    <h2>Controle de Atendimentos</h2>
                 </div>
                 <div class="current-date"><strong>Data atual:</strong> 04 de Fevereiro de 2026</div>
             </div>
@@ -224,9 +226,6 @@
                     <label for="profissional-select"><strong>Profissional:</strong></label>
                     <select id="profissional-select" class="form-control" style="min-width: 200px;" onchange="renderCalendar()">
                         <option value="all">Todos os Profissionais</option>
-                        <option value="Dr. Silva">Dr. Silva</option>
-                        <option value="Dra. Costa">Dra. Costa</option>
-                        <option value="Dr. Oliveira">Dr. Oliveira</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -235,8 +234,9 @@
                         <option value="all">Todos</option>
                         <option value="confirmed">Confirmado</option>
                         <option value="pending">Pendente</option>
-                        <option value="normal">Agendado</option>
-                        <option value="completed">Concluído</option>
+                        <option value="normal">Atendimento</option>
+                        <option value="completed">Atendido</option>
+                        <option value="missed">Faltou</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -247,7 +247,7 @@
                     <button class="btn-warning" onclick="alert('Funcionalidade de Alerta de Retorno: 3 pacientes precisam retornar.')"><i class="fas fa-bell"></i> Alerta de Retorno</button>
                     <button class="btn-outline" onclick="imprimirAgenda()" style="padding: 0.8rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; border: 1px solid #dfe1e5; background: white; color: #5f6368;"><i class="fas fa-print"></i> Imprimir</button>
                     <button class="btn-outline" onclick="window.location.href='paciente.html'" style="padding: 0.8rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; border: 1px solid #dfe1e5; background: white; color: #5f6368;"><i class="fas fa-user-plus"></i> Novo Paciente</button>
-                    <button class="btn-primary" onclick="abrirModal()"><i class="fas fa-plus"></i> Novo Agendamento</button>
+                    <button class="btn-primary" onclick="abrirModal()"><i class="fas fa-plus"></i> Novo Atendimento</button>
                 </div>
             </div>
 
@@ -300,7 +300,7 @@
     <div id="modalAgendamento" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Novo Agendamento</h3>
+                <h3 class="modal-title">Novo Atendimento</h3>
                 <button class="close-modal" onclick="fecharModal()">&times;</button>
             </div>
             <form id="formAgendamento">
@@ -342,16 +342,15 @@
                 <div class="form-group-modal">
                     <label>Status</label>
                     <select id="agendamentoStatus" class="form-control-modal">
-                        <option value="normal">Agendado</option>
-                        <option value="confirmed">Confirmado</option>
-                        <option value="pending">Pendente</option>
+                        <option value="normal">Atendimento</option>
+                        <option value="completed">Atendido</option>
                     </select>
                 </div>
                 <div class="form-group-modal">
                     <label>Observações</label>
                     <textarea id="agendamentoObservacoes" class="form-control-modal" rows="3" placeholder="Detalhes adicionais..."></textarea>
                 </div>
-                <button type="button" class="btn-primary" style="width: 100%; justify-content: center;" onclick="salvarAgendamento()">Salvar Agendamento</button>
+                <button type="button" class="btn-primary" style="width: 100%; justify-content: center;" onclick="salvarAgendamento()">Salvar Atendimento</button>
             </form>
         </div>
     </div>
@@ -360,7 +359,7 @@
     <div id="modalDetalhes" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Detalhes do Agendamento</h3>
+                <h3 class="modal-title">Detalhes do Atendimento</h3>
                 <button class="close-modal" onclick="fecharModalDetalhes()">&times;</button>
             </div>
             <div id="detalhesConteudo">
@@ -377,7 +376,7 @@
                 <button class="close-modal" onclick="fecharModalHorario()">&times;</button>
             </div>
             <div class="form-group-modal">
-                <label>Horário do Agendamento</label>
+                <label>Horário do Atendimento</label>
                 <input type="time" id="dropTimeInput" class="form-control-modal" value="09:00">
             </div>
             <button type="button" class="btn-primary" style="width: 100%; justify-content: center;" onclick="confirmarHorarioDrop()">Confirmar</button>
@@ -408,6 +407,38 @@
     <script>
         function toggleMenu() {
             document.querySelector('.sidebar').classList.toggle('active');
+        }
+
+        // Carregar lista de profissionais do Firestore para preencher filtros e selects
+        function carregarListaProfissionaisGlobal() {
+            db.collection('users').get().then(snapshot => {
+                const users = [];
+                snapshot.forEach(doc => users.push(doc.data()));
+                
+                // Filtra usuários que podem ser profissionais (Dentista, Profissional, Administrador)
+                const professionals = users.filter(u => 
+                    u.role === 'Dentista' || u.role === 'Profissional' || u.role === 'Administrador'
+                ).map(u => u.name).sort();
+
+                window.cachedProfessionals = professionals;
+
+                // Atualiza o filtro da toolbar
+                const filterSelect = document.getElementById('profissional-select');
+                if (filterSelect) {
+                    const currentVal = filterSelect.value;
+                    filterSelect.innerHTML = '<option value="all">Todos os Profissionais</option>';
+                    professionals.forEach(name => {
+                        const option = document.createElement('option');
+                        option.value = name;
+                        option.textContent = name;
+                        filterSelect.appendChild(option);
+                    });
+                    // Tenta manter a seleção se ainda existir
+                    if (professionals.includes(currentVal)) {
+                        filterSelect.value = currentVal;
+                    }
+                }
+            });
         }
 
         function carregarPacientes() {
@@ -461,16 +492,8 @@
                 return;
             }
             
-            // Se for admin, carrega todos
-            let users = JSON.parse(localStorage.getItem('systemUsers')) || [];
-            if (users.length === 0) {
-                users = [
-                    { name: 'Dr. Silva', role: 'Dentista' },
-                    { name: 'Dra. Costa', role: 'Dentista' },
-                    { name: 'Dr. Oliveira', role: 'Dentista' }
-                ];
-            }
-            const dentistas = users.filter(u => u.role === 'Dentista' || u.role === 'Profissional').map(u => u.name);
+            // Se for admin, carrega da lista cacheada (vinda do Firestore)
+            const dentistas = window.cachedProfessionals || [];
             
             dentistas.forEach(nome => {
                 const option = document.createElement('option');
@@ -487,7 +510,7 @@
             document.getElementById('formAgendamento').reset();
             document.getElementById('agendamentoId').value = '';
             document.getElementById('originWaitingListId').value = '';
-            document.querySelector('#modalAgendamento .modal-title').innerText = 'Novo Agendamento';
+            document.querySelector('#modalAgendamento .modal-title').innerText = 'Novo Atendimento';
             carregarPacientes();
             carregarProfissionais();
             
@@ -567,9 +590,17 @@
             const statusMap = {
                 'confirmed': '<span style="color: green; font-weight: bold;">Confirmado</span>',
                 'pending': '<span style="color: orange; font-weight: bold;">Pendente</span>',
-                'normal': '<span style="color: #1a73e8; font-weight: bold;">Agendado</span>',
-                'completed': '<span style="color: #757575; font-weight: bold;">Concluído</span>'
+                'normal': '<span style="color: #1a73e8; font-weight: bold;">Atendimento</span>',
+                'completed': '<span style="color: #757575; font-weight: bold;">Atendido</span>',
+                'missed': '<span style="color: #c62828; font-weight: bold;">Faltou</span>'
             };
+
+            let actionButton = '';
+            if (app.type === 'completed') {
+                actionButton = `<button class="btn-warning" onclick="desfazerAtendimento(${app.id})" style="padding: 0.6rem 1.2rem; background-color: #ff9800; border-color: #ff9800; color: white;"><i class="fas fa-undo"></i> Desfazer</button>`;
+            } else {
+                actionButton = `<button class="btn-primary" onclick="concluirAtendimento(${app.id})" style="padding: 0.6rem 1.2rem; background-color: #28a745; border-color: #28a745;"><i class="fas fa-check-circle"></i> Atendido</button>`;
+            }
 
             conteudo.innerHTML = `
                 <div class="form-group-modal">
@@ -616,7 +647,7 @@
                     <button class="btn-outline btn-sm" onclick="fecharModalDetalhes()" style="padding: 0.6rem 1.2rem;">Fechar</button>
                     <button class="btn-outline btn-sm" onclick="excluirAgendamento(${app.id})" style="padding: 0.6rem 1.2rem; color: #d32f2f; border-color: #d32f2f;"><i class="fas fa-trash"></i> Excluir</button>
                     <button class="btn-primary" onclick="prepararEdicao(${app.id})" style="padding: 0.6rem 1.2rem;"><i class="fas fa-edit"></i> Editar</button>
-                    <button class="btn-primary" onclick="concluirAtendimento(${app.id})" style="padding: 0.6rem 1.2rem; background-color: #28a745; border-color: #28a745;"><i class="fas fa-check-circle"></i> Atendimento Concluído</button>
+                    ${actionButton}
                 </div>
             `;
             
@@ -628,9 +659,11 @@
         }
 
         function excluirAgendamento(id) {
-            if(confirm('Tem certeza que deseja excluir este agendamento?')) {
+            const app = appointments.find(a => a.id === id);
+            if(confirm('Tem certeza que deseja excluir este atendimento?')) {
                 db.collection('appointments').doc(String(id)).delete()
                     .then(() => {
+                        logAudit('Excluiu atendimento', app ? app.patient : 'Paciente');
                         fecharModalDetalhes();
                         // A atualização visual ocorre automaticamente pelo onSnapshot
                     })
@@ -638,10 +671,24 @@
             }
         }
 
+        function desfazerAtendimento(id) {
+            if(confirm('Deseja desfazer o status de atendido?')) {
+                const app = appointments.find(a => a.id === id);
+                db.collection('appointments').doc(String(id)).update({ type: 'normal' }).then(() => {
+                    logAudit('Desfez atendimento', app ? app.patient : 'Paciente');
+                    fecharModalDetalhes();
+                })
+                .catch(err => alert('Erro ao atualizar: ' + err.message));
+            }
+        }
+
         function concluirAtendimento(id) {
-            if(confirm('Deseja marcar este atendimento como concluído?')) {
-                db.collection('appointments').doc(String(id)).update({ type: 'completed' })
-                    .then(() => fecharModalDetalhes())
+            if(confirm('Deseja marcar este atendimento como atendido?')) {
+                const app = appointments.find(a => a.id === id);
+                db.collection('appointments').doc(String(id)).update({ type: 'completed' }).then(() => {
+                    logAudit('Concluiu atendimento', app ? app.patient : 'Paciente');
+                    fecharModalDetalhes();
+                })
                     .catch(err => alert('Erro ao atualizar: ' + err.message));
             }
         }
@@ -665,7 +712,7 @@
                 document.getElementById('agendamentoHora').value = app.time;
                 document.getElementById('agendamentoStatus').value = app.type;
                 
-                document.querySelector('#modalAgendamento .modal-title').innerText = 'Editar Agendamento';
+                document.querySelector('#modalAgendamento .modal-title').innerText = 'Editar Atendimento';
                 carregarPacientes();
                 carregarProfissionais();
                 
@@ -724,11 +771,6 @@
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            if (selectedDate < today) {
-                alert('Não é possível realizar agendamentos em datas passadas.');
-                return;
-            }
-
             // Validação de Conflito de Horário
             const conflict = appointments.find(a => 
                 a.year === year && 
@@ -740,7 +782,7 @@
             );
 
             if (conflict) {
-                alert(`Conflito de horário: O profissional ${profissional} já possui um agendamento neste horário.`);
+                alert(`Conflito de horário: O profissional ${profissional} já possui um atendimento neste horário.`);
                 return;
             }
 
@@ -751,6 +793,7 @@
                     professional: profissional, type: status, email: email,
                     celular: celular, procedure: procedimento, notes: observacoes
                 }).then(() => {
+                    logAudit('Atualizou atendimento', paciente);
                     fecharModal();
                 }).catch(err => alert('Erro ao atualizar: ' + err.message));
             } else {
@@ -776,6 +819,7 @@
 
                 db.collection('appointments').doc(String(newId)).set(newApp)
                     .then(() => {
+                        logAudit('Agendou atendimento', paciente);
                         fecharModal();
                         if (originId) {
                             // Remove da lista de espera se veio de lá
@@ -794,7 +838,7 @@
                             const dataFormatada = data.split('-').reverse().join('/');
                             const mensagem = `Olá ${paciente}, seu agendamento na Den para ${procedimento || 'consulta'} está confirmado para o dia ${dataFormatada} às ${hora}.`;
                             
-                            if(confirm("Agendamento salvo! Deseja enviar o lembrete por WhatsApp agora?")) {
+                            if(confirm("Atendimento salvo! Deseja enviar o lembrete por WhatsApp agora?")) {
                                 window.open(`https://wa.me/${numeroFinal}?text=${encodeURIComponent(mensagem)}`, '_blank');
                             }
                         }
@@ -802,6 +846,22 @@
                     .catch(err => alert('Erro ao criar: ' + err.message));
             }
 
+        }
+
+        // Função de Auditoria
+        function logAudit(acao, alvo) {
+            const logs = JSON.parse(localStorage.getItem('auditLogs')) || [];
+            const actor = localStorage.getItem('userName') || 'Usuário';
+            const newLog = {
+                id: Date.now(),
+                timestamp: new Date().toLocaleString('pt-BR'),
+                actor: actor,
+                action: acao,
+                target: alvo
+            };
+            logs.unshift(newLog);
+            if (logs.length > 50) logs.pop();
+            localStorage.setItem('auditLogs', JSON.stringify(logs));
         }
 
         function imprimirAgenda() {
@@ -829,7 +889,7 @@
                 
                 let html = `<h2 style="margin-bottom: 20px; color: #1a237e;">Agenda do Dia: ${today.toLocaleDateString()}</h2>`;
                 if (todayApps.length === 0) {
-                    html += '<p>Nenhum agendamento encontrado para hoje.</p>';
+                    html += '<p>Nenhum atendimento encontrado para hoje.</p>';
                 } else {
                     html += '<ul style="list-style: none; padding: 0;">';
                     todayApps.sort((a,b) => a.time.localeCompare(b.time)).forEach(app => {
@@ -1122,11 +1182,14 @@
                 if (app.type === 'confirmed') className += ' confirmed';
                 if (app.type === 'pending') className += ' pending';
                 if (app.type === 'completed') className += ' completed';
+                if (app.type === 'missed') className += ' missed';
+                
+                const checkIcon = app.type === 'completed' ? '<i class="fas fa-check" style="font-size: 0.8em; margin-right: 3px;"></i> ' : '';
                 
                 // Se for visualização expandida (Dia/Semana), mostrar mais detalhes
                 const content = isExpanded 
-                    ? `<div style="display:flex; justify-content:space-between;"><span><strong>${app.time}</strong> ${app.patient}</span> <span>${app.procedure || ''}</span></div>` 
-                    : `${app.time} - ${app.patient}`;
+                    ? `<div style="display:flex; justify-content:space-between;"><span><strong>${app.time}</strong> ${checkIcon}${app.patient}</span> <span>${app.procedure || ''}</span></div>` 
+                    : `${app.time} - ${checkIcon}${app.patient}`;
                     
                 appsHtml += `<div class="${className}" draggable="true" ondragstart="drag(event, ${app.id}, 'appointment')" onclick="abrirDetalhesAgendamento(${app.id})">${content}</div>`;
             });
@@ -1174,11 +1237,6 @@
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
 
-                if (targetDate < today) {
-                    alert('Não é possível mover ou criar agendamentos para datas passadas.');
-                    return;
-                }
-
                 const data = JSON.parse(ev.dataTransfer.getData("text/plain"));
                 
                 if (data.type === 'appointment') {
@@ -1197,7 +1255,7 @@
                         );
 
                         if (conflict) {
-                            alert(`Conflito de horário: O profissional ${app.professional} já possui um agendamento neste horário na data selecionada.`);
+                            alert(`Conflito de horário: O profissional ${app.professional} já possui um atendimento neste horário na data selecionada.`);
                             return;
                         }
 
@@ -1272,15 +1330,26 @@
 
         // Inicializa o calendário
         document.addEventListener('DOMContentLoaded', () => {
+            // Renderizar estrutura do calendário imediatamente para evitar delay visual
+            renderCalendar();
+
             // Verificar Autenticação Firebase
             auth.onAuthStateChanged((user) => {
                 if (!user) {
                     window.location.href = 'login.html';
                 } else {
-                    // Carregar Agendamentos do Firestore
-                    db.collection('appointments')
-                        .where('ownerId', '==', user.uid)
-                        .onSnapshot((snapshot) => {
+                    // Verificar se é Admin para definir a query
+                    db.collection('users').doc(user.uid).get().then(doc => {
+                        const userData = doc.data();
+                        const isAdmin = userData && userData.role === 'Administrador';
+
+                        // Query de Agendamentos
+                        let appointmentsQuery = db.collection('appointments');
+                        if (!isAdmin) {
+                            appointmentsQuery = appointmentsQuery.where('professional', '==', userName);
+                        }
+
+                        appointmentsQuery.onSnapshot((snapshot) => {
                             appointments = [];
                             snapshot.forEach((doc) => {
                                 appointments.push(doc.data());
@@ -1288,15 +1357,22 @@
                             renderCalendar();
                         });
 
-                    // Carregar Pacientes do Firestore para o Datalist (Filtrado por Dono)
-                    db.collection('pacientes')
-                        .where('ownerId', '==', user.uid)
-                        .onSnapshot((snapshot) => {
+                        // Query de Pacientes
+                        let patientsQuery = db.collection('pacientes');
+                        if (!isAdmin) {
+                            patientsQuery = patientsQuery.where('ownerId', '==', user.uid);
+                        }
+
+                        patientsQuery.onSnapshot((snapshot) => {
                             window.firestorePatients = [];
                             snapshot.forEach((doc) => {
                                 window.firestorePatients.push(doc.data());
                             });
                         });
+                    });
+                    
+                    // Carregar Profissionais para os filtros
+                    carregarListaProfissionaisGlobal();
                 }
             });
 
@@ -1348,10 +1424,28 @@
             }
 
             if (userRole === 'user') {
-                const savedRestricted = localStorage.getItem('restrictedMenus');
-                const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+                const userPermissions = JSON.parse(localStorage.getItem('userPermissions'));
+                let allowedMenus = [];
+                
+                if (userPermissions) {
+                    allowedMenus = userPermissions;
+                } else {
+                    const savedRestricted = localStorage.getItem('restrictedMenus');
+                    const restrictedMenus = savedRestricted ? JSON.parse(savedRestricted) : ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
+                    const allMenus = ['Dashboard', 'Minha Agenda', 'Atendimentos', 'Pacientes', 'Financeiro', 'Profissional', 'Relatórios', 'Faturas', 'Configurações', 'Usuários', 'Ajuda'];
+                    allowedMenus = allMenus.filter(m => !restrictedMenus.includes(m));
+                }
+
                 document.querySelectorAll('.nav-links a').forEach(link => {
-                    if (restrictedMenus.includes(link.textContent.trim())) {
+                    const text = link.textContent.trim();
+                    if (text !== 'Dashboard' && text !== 'Minha Agenda' && !allowedMenus.includes(text)) {
+                        link.parentElement.style.display = 'none';
+                    }
+                });
+            } else if (userRole === 'admin') {
+                // Ocultar Minha Agenda para Admin
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    if (link.getAttribute('href') === 'minha_agenda.html') {
                         link.parentElement.style.display = 'none';
                     }
                 });

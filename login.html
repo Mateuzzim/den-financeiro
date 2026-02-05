@@ -227,6 +227,22 @@
                 if (doc.exists) {
                     const userData = doc.data();
                     
+                    // Verificar validade do plano (Teste de 15 dias ou Assinatura)
+                    if (userData.expire && userData.expire !== 'Vitalício' && userData.expire !== 'Vinculado') {
+                        const parts = userData.expire.split('/');
+                        if (parts.length === 3) {
+                            const expireDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+                            expireDate.setHours(23, 59, 59, 999); // Considera válido até o final do dia
+                            
+                            if (new Date() > expireDate) {
+                                alert('Seu período de acesso expirou. Entre em contato para renovar seu plano.');
+                                btn.innerText = originalText;
+                                btn.disabled = false;
+                                return;
+                            }
+                        }
+                    }
+
                     // Atualiza localStorage para manter compatibilidade com o resto do sistema
                     localStorage.setItem('userRole', userData.role === 'Administrador' ? 'admin' : 'user');
                     localStorage.setItem('userName', userData.name);

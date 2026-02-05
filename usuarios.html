@@ -112,7 +112,8 @@
                 <h3 class="nav-title">Menu Principal</h3>
                 <ul class="nav-links">
                     <li><a href="dashboard.html"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
-                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Agendamento</a></li>
+                    <li><a href="minha_agenda.html"><i class="fas fa-user-clock nav-icon"></i> Minha Agenda</a></li>
+                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Atendimentos</a></li>
                     <li><a href="paciente.html"><i class="fas fa-user-injured nav-icon"></i> Pacientes</a></li>
                     <li><a href="financeiro.html"><i class="fas fa-chart-line nav-icon"></i> Financeiro</a></li>
                     <li><a href="profissonal.html"><i class="fas fa-user-md nav-icon"></i> Profissional</a></li>
@@ -200,6 +201,7 @@
                         <option value="Administrador">Administrador</option>
                         <option value="Dentista">Dentista</option>
                         <option value="Recepcionista">Recepcionista</option>
+                        <option value="Auxiliar">Auxiliar</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -221,6 +223,51 @@
                         <option value="active">Ativo</option>
                         <option value="inactive">Inativo</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>Permissões de Acesso (Personalizado)</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #dfe1e5;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" checked disabled>
+                            <label style="cursor: not-allowed; color: #999; font-weight: normal; font-size: 0.9rem;">Dashboard (Fixo)</label>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" class="edit-user-perm" value="Atendimentos">
+                            <label style="cursor: pointer; font-weight: normal; font-size: 0.9rem;">Atendimentos</label>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" class="edit-user-perm" value="Pacientes">
+                            <label style="cursor: pointer; font-weight: normal; font-size: 0.9rem;">Pacientes</label>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" class="edit-user-perm" value="Financeiro">
+                            <label style="cursor: pointer; font-weight: normal; font-size: 0.9rem;">Financeiro</label>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" class="edit-user-perm" value="Profissional">
+                            <label style="cursor: pointer; font-weight: normal; font-size: 0.9rem;">Profissional</label>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" class="edit-user-perm" value="Relatórios">
+                            <label style="cursor: pointer; font-weight: normal; font-size: 0.9rem;">Relatórios</label>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" class="edit-user-perm" value="Faturas">
+                            <label style="cursor: pointer; font-weight: normal; font-size: 0.9rem;">Faturas</label>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" class="edit-user-perm" value="Configurações">
+                            <label style="cursor: pointer; font-weight: normal; font-size: 0.9rem;">Configurações</label>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" class="edit-user-perm" value="Usuários">
+                            <label style="cursor: pointer; font-weight: normal; font-size: 0.9rem;">Usuários</label>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" class="edit-user-perm" value="Ajuda">
+                            <label style="cursor: pointer; font-weight: normal; font-size: 0.9rem;">Ajuda</label>
+                        </div>
+                    </div>
                 </div>
                 <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">Salvar Alterações</button>
             </form>
@@ -253,6 +300,7 @@
                         <option value="Dentista">Dentista</option>
                         <option value="Recepcionista">Recepcionista</option>
                         <option value="Administrador">Administrador</option>
+                        <option value="Auxiliar">Auxiliar</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -496,6 +544,20 @@
                 document.getElementById('editUserExpire').value = user.expire;
                 document.getElementById('editUserStatus').value = user.status;
                 document.getElementById('modalEditarUsuario').style.display = 'flex';
+
+                // Carregar Permissões
+                let permissions = user.permissions;
+                if (!permissions) {
+                    // Defaults inteligentes baseados no cargo se não houver permissões salvas
+                    if (user.role === 'Administrador') {
+                        permissions = ['Atendimentos', 'Pacientes', 'Financeiro', 'Profissional', 'Relatórios', 'Faturas', 'Configurações', 'Usuários', 'Ajuda'];
+                    } else if (user.role === 'Recepcionista') {
+                        permissions = ['Atendimentos', 'Pacientes', 'Financeiro', 'Faturas', 'Ajuda'];
+                    } else {
+                        permissions = ['Atendimentos', 'Pacientes', 'Profissional', 'Relatórios', 'Ajuda'];
+                    }
+                }
+                document.querySelectorAll('.edit-user-perm').forEach(cb => cb.checked = permissions.includes(cb.value));
             }
         }
 
@@ -602,13 +664,19 @@
             e.preventDefault();
             const id = document.getElementById('editUserId').value;
             
+            const permissions = [];
+            document.querySelectorAll('.edit-user-perm:checked').forEach(cb => {
+                permissions.push(cb.value);
+            });
+            
             const updatedData = {
                 name: document.getElementById('editUserName').value,
                 email: document.getElementById('editUserEmail').value,
                 role: document.getElementById('editUserRole').value,
                 plan: document.getElementById('editUserPlan').value,
                 expire: document.getElementById('editUserExpire').value,
-                status: document.getElementById('editUserStatus').value
+                status: document.getElementById('editUserStatus').value,
+                permissions: permissions
             };
 
             db.collection('users').doc(id).update(updatedData).then(() => {
@@ -680,6 +748,13 @@
                 alert('Acesso negado: Apenas administradores podem acessar a gestão de usuários.');
                 window.location.href = 'dashboard.html';
                 return;
+            } else if (userRole === 'admin') {
+                // Ocultar Minha Agenda para Admin
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    if (link.getAttribute('href') === 'minha_agenda.html') {
+                        link.parentElement.style.display = 'none';
+                    }
+                });
             }
 
             document.querySelector('.user-name').textContent = userName;

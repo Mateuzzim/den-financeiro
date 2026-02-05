@@ -85,7 +85,8 @@
                 <h3 class="nav-title">Menu Principal</h3>
                 <ul class="nav-links">
                     <li><a href="dashboard.html"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
-                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Agendamento</a></li>
+                    <li><a href="minha_agenda.html"><i class="fas fa-user-clock nav-icon"></i> Minha Agenda</a></li>
+                    <li><a href="agendamento.html"><i class="fas fa-calendar-check nav-icon"></i> Atendimentos</a></li>
                     <li><a href="paciente.html"><i class="fas fa-user-injured nav-icon"></i> Pacientes</a></li>
                     <li><a href="financeiro.html"><i class="fas fa-chart-line nav-icon"></i> Financeiro</a></li>
                     <li><a href="profissonal.html"><i class="fas fa-user-md nav-icon"></i> Profissional</a></li>
@@ -385,31 +386,58 @@
                 // Bloqueia acesso à página se for usuário comum
                 alert('Acesso negado: Você não tem permissão para acessar as configurações.');
                 window.location.href = 'dashboard.html';
+            } else if (userRole === 'admin') {
+                // Ocultar Minha Agenda para Admin
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    if (link.getAttribute('href') === 'minha_agenda.html') {
+                        link.parentElement.style.display = 'none';
+                    }
+                });
             }
 
             // --- Lógica de Permissões ---
             // Carregar permissões atuais
             const defaultRestricted = ['Financeiro', 'Relatórios', 'Faturas', 'Configurações', 'Profissional', 'Usuários'];
-            const savedRestricted = localStorage.getItem('restrictedMenus');
-            const currentRestricted = savedRestricted ? JSON.parse(savedRestricted) : defaultRestricted;
-
-            const checkboxes = document.querySelectorAll('#permissionsForm input[type="checkbox"]');
-            checkboxes.forEach(cb => {
-                if (cb.value !== 'Dashboard') {
-                    cb.checked = !currentRestricted.includes(cb.value);
+            
+            // Carregar do Firestore (Sincronização Global)
+            db.collection('settings').doc('global_permissions').get().then(doc => {
+                let currentRestricted;
+                if (doc.exists && doc.data().restrictedMenus) {
+                    currentRestricted = doc.data().restrictedMenus;
+                    localStorage.setItem('restrictedMenus', JSON.stringify(currentRestricted));
+                } else {
+                    const savedRestricted = localStorage.getItem('restrictedMenus');
+                    currentRestricted = savedRestricted ? JSON.parse(savedRestricted) : defaultRestricted;
                 }
+                
+                const checkboxes = document.querySelectorAll('#permissionsForm input[type="checkbox"]');
+                checkboxes.forEach(cb => {
+                    if (cb.value !== 'Dashboard') {
+                        cb.checked = !currentRestricted.includes(cb.value);
+                    }
+                });
             });
 
             document.getElementById('permissionsForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 const newRestricted = [];
+                const checkboxes = document.querySelectorAll('#permissionsForm input[type="checkbox"]');
                 checkboxes.forEach(cb => {
                     if (!cb.checked && cb.value !== 'Dashboard') {
                         newRestricted.push(cb.value);
                     }
                 });
-                localStorage.setItem('restrictedMenus', JSON.stringify(newRestricted));
-                alert('Permissões atualizadas com sucesso! As alterações terão efeito no próximo login dos usuários.');
+                
+                // Salvar no Firestore para aplicar a todos os usuários
+                db.collection('settings').doc('global_permissions').set({ restrictedMenus: newRestricted })
+                    .then(() => {
+                        localStorage.setItem('restrictedMenus', JSON.stringify(newRestricted));
+                        alert('Permissões atualizadas com sucesso! As alterações terão efeito no próximo login dos usuários.');
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('Erro ao salvar permissões: ' + err.message);
+                    });
             });
 
             // --- Lógica de Informações de Contato ---
