@@ -58,14 +58,14 @@
             .filter-group { flex-direction: column; align-items: stretch; width: 100%; }
             .filter-group label { margin-bottom: 0.2rem; }
             .filter-group select, .filter-group input { width: 100% !important; min-width: 0 !important; }
-            .button-group { flex-direction: column; width: 100%; }
-            .button-group button { width: 100%; justify-content: center; }
+            .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+            .button-group button { width: 100%; justify-content: center; margin: 0; font-size: 0.85rem; padding: 0.8rem 0.5rem; }
 
             /* Ajustes do Cabeçalho do Calendário */
             .calendar-header { flex-direction: column; gap: 1rem; text-align: center; }
-            .calendar-header > div { flex-direction: column; width: 100%; gap: 10px !important; }
+            .calendar-header > div:first-child { flex-direction: column; width: 100%; gap: 10px !important; }
             .view-selector { width: 100%; justify-content: center; margin-top: 5px; }
-            .calendar-nav { justify-content: center; width: 100%; }
+            .calendar-nav { display: flex; flex-direction: row; justify-content: center; width: 100%; gap: 20px; }
 
             /* Ajustes da Grade do Calendário */
             .calendar-day { min-height: 80px; }
@@ -166,6 +166,20 @@
         .print-only { display: none; }
         .calendar-day.drag-over { background-color: #e3f2fd; border: 2px dashed #1a73e8; }
         .dot-indicator { width: 8px; height: 8px; background-color: #ff1744; border-radius: 50%; display: inline-block; margin-left: 5px; vertical-align: middle; }
+
+        /* Barra de Rolagem Futurista */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #f0f4f8; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #1a73e8 0%, #00e5ff 100%); border-radius: 5px; border: 2px solid #f0f4f8; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #1565c0 0%, #00b8d4 100%); }
+
+        /* Ajuste de Layout para os Dias (Dom, Seg...) com Rolagem */
+        .calendar-container { overflow-x: auto; padding-bottom: 10px; }
+        .calendar-grid { min-width: 800px; } /* Força largura mínima para ativar a barra de rolagem e não espremer os dias */
+        
+        @media (max-width: 768px) {
+            .calendar-grid { min-width: 600px; }
+        }
     </style>
 </head>
 <body>

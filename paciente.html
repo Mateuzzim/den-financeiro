@@ -469,7 +469,6 @@
                 const id = document.getElementById('pacienteId').value;
                 const paciente = {
                     id: id ? parseInt(id) : Date.now(), // Mantém ID numérico para compatibilidade
-                    ownerId: user.uid, // Vincula ao usuário logado
                     nome: document.getElementById('nome').value,
                     apelido: document.getElementById('apelido').value,
                     nascimento: document.getElementById('nascimento').value,
@@ -498,6 +497,9 @@
                         })
                         .catch(err => alert('Erro ao atualizar: ' + err.message));
                 } else {
+                    // Adiciona ownerId apenas na criação para garantir que cada usuário veja apenas os seus
+                    paciente.ownerId = user.uid;
+                    
                     // Criar no Firestore
                     db.collection('pacientes').doc(String(paciente.id)).set(paciente)
                         .then(() => {

@@ -6,6 +6,11 @@
     <title>Contato | Den</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦷</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f0f4f8; color: #333; overflow-x: hidden; }
@@ -193,12 +198,15 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const savedContactInfo = JSON.parse(localStorage.getItem('siteContactInfo'));
-            if (savedContactInfo) {
-                if (savedContactInfo.address) document.getElementById('displayAddress').innerHTML = savedContactInfo.address.replace(/\n/g, '<br>');
-                if (savedContactInfo.email) document.getElementById('displayEmail').innerHTML = savedContactInfo.email.replace(/\n/g, '<br>');
-                if (savedContactInfo.phone) document.getElementById('displayPhone').innerHTML = savedContactInfo.phone.replace(/\n/g, '<br>');
-            }
+            // Carregar informações de contato do Firestore
+            db.collection('settings').doc('contact_info').get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.address) document.getElementById('displayAddress').innerHTML = data.address.replace(/\n/g, '<br>');
+                    if (data.email) document.getElementById('displayEmail').innerHTML = data.email.replace(/\n/g, '<br>');
+                    if (data.phone) document.getElementById('displayPhone').innerHTML = data.phone.replace(/\n/g, '<br>');
+                }
+            });
         });
 
         document.getElementById('contactForm').addEventListener('submit', function(e) {
@@ -218,7 +226,6 @@
             btn.disabled = true;
             
             const messageData = {
-                id: Date.now(),
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
                 subject: document.getElementById('subject').options[document.getElementById('subject').selectedIndex].text,
@@ -227,18 +234,19 @@
                 read: false
             };
 
-            // Simulação de envio
-            setTimeout(() => {
-                // Salvar mensagem no localStorage
-                const messages = JSON.parse(localStorage.getItem('contactMessages')) || [];
-                messages.push(messageData);
-                localStorage.setItem('contactMessages', JSON.stringify(messages));
-
-                alert('Mensagem enviada com sucesso! Entraremos em contato em breve.');
-                this.reset();
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }, 1500);
+            // Salvar no Firestore
+            db.collection('contact_messages').add(messageData)
+                .then(() => {
+                    alert('Mensagem enviada com sucesso! Entraremos em contato em breve.');
+                    this.reset();
+                })
+                .catch(error => {
+                    alert('Erro ao enviar mensagem: ' + error.message);
+                })
+                .finally(() => {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                });
         });
     </script>
 

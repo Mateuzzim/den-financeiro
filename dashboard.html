@@ -733,6 +733,13 @@
                     <input type="text" id="pacienteProcedimento" class="form-control">
                 </div>
                 <div class="form-group">
+                    <label>Status</label>
+                    <select id="pacienteStatus" class="form-control">
+                        <option value="normal">Atendimento</option>
+                        <option value="completed">Atendido</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>Observações</label>
                     <textarea id="pacienteObservacoes" class="form-control" rows="2"></textarea>
                 </div>
@@ -783,6 +790,7 @@
             const nome = document.getElementById('pacienteNome').value;
             const celular = document.getElementById('pacienteCelular').value;
             const procedimento = document.getElementById('pacienteProcedimento').value;
+            const status = document.getElementById('pacienteStatus').value;
             const dataAtendimento = document.getElementById('pacienteDataAtendimento').value;
             const horaAtendimento = document.getElementById('pacienteHoraAtendimento').value;
             const observacoes = document.getElementById('pacienteObservacoes').value;
@@ -832,7 +840,7 @@
                     professional: userName,
                     day: day, month: month, year: year, time: horaAtendimento,
                     procedure: procedimento, celular: celular, notes: observacoes,
-                    type: 'normal', email: ''
+                    type: status, email: ''
                 };
                 
                 const appRef = db.collection('appointments').doc(String(appId));
@@ -954,18 +962,18 @@
                                 localStorage.setItem('restrictedMenus', JSON.stringify(settingsDoc.data().restrictedMenus));
                             }
                         });
+
+                        if (isAdmin) {
+                            // Carregar Usuários Ativos (Sistema) - Apenas Admin
+                            db.collection('users').where('status', '==', 'active').onSnapshot(snap => {
+                                const el = document.getElementById('activeSystemUsers');
+                                if(el) el.textContent = snap.size;
+                            });
+
+                            // Carregar Atividades Recentes - Apenas Admin
+                            updateRecentActivity();
+                        }
                     });
-
-                    if (isAdmin) {
-                        // Carregar Usuários Ativos (Sistema) - Apenas Admin
-                        db.collection('users').where('status', '==', 'active').onSnapshot(snap => {
-                            const el = document.getElementById('activeSystemUsers');
-                            if(el) el.textContent = snap.size;
-                        });
-
-                        // Carregar Atividades Recentes - Apenas Admin
-                        updateRecentActivity();
-                    }
                 }
             });
 
